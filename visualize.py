@@ -1,5 +1,8 @@
 import json
 import sys
+import nltk
+from nltk.corpus import stopwords
+from nltk.util import bigrams
 
 def writeToFrequencyFile(mostFrequent, frequency_file_name, participants):
     try:
@@ -48,25 +51,38 @@ def writeToFiles(mostFrequent, senders, participants, frequency_file_name, sende
     ax = df.plot.bar(x = "keys", y = "values", rot = 0)
     """
 
+def insertIntoMostFrequent(mostFrequent, message, word):
+    if (word in mostFrequent):
+        mostFrequent[word]["total"] = mostFrequent[word]["total"] + 1
+        if (message["sender_name"] in mostFrequent[word]):
+            mostFrequent[word][message["sender_name"]] = mostFrequent[word][message["sender_name"]] + 1
+        else:
+            mostFrequent[word][message["sender_name"]] = 1
+    else:
+        mostFrequent[word] = {"total": 1, message["sender_name"]: 1}
+
+
+
 def populateFrequencyDicts(data, mostFrequent, senders):
+    stopWords = set(stopwords.words('english'))
     for message in data["messages"]:
         sender = message.get("sender_name", "")
         if (sender in senders):
             senders[sender] = senders[sender] + 1
         else:
             senders[sender] = 1
-        decoded = message.get("content", "")
-        contents = decoded.split()
-        for word in contents:
+        messageContents = message.get("content", "")
+        wordsInMessage = messageContents.split()
+        wordsInMessage = list(filter(lambda word: word.lower() not in stopWords, wordsInMessage))
+        bigramsList = list(map (lambda bigram: bigram[0].lower() + " " + bigram[1].lower(), bigrams(wordsInMessage)))
+        """
+        for word in wordsInMessage:
             word = word.lower()
-            if (word in mostFrequent):
-                mostFrequent[word]["total"] = mostFrequent[word]["total"] + 1
-                if (message["sender_name"] in mostFrequent[word]):
-                    mostFrequent[word][message["sender_name"]] = mostFrequent[word][message["sender_name"]] + 1
-                else:
-                    mostFrequent[word][message["sender_name"]] = 1
-            else:
-                mostFrequent[word] = {"total": 1, message["sender_name"]: 1}
+            insertIntoMostFrequent(mostFrequent, message, word)
+        """
+        for bigram in bigramsList:
+            insertIntoMostFrequent(mostFrequent, message, bigram)
+            
 
 def getMostUsed(mostFrequent, start, end):
     wordFrequencyList = list(mostFrequent.items())
@@ -97,6 +113,7 @@ def main():
             data = json.load(file)
             file.close()
             processFiles(data, start, end, sys.argv[2], sys.argv[3])
+            print("finished")
         except Exception as e:
             print("Something went wrong while opening " + sys.argv[1])
     else:
