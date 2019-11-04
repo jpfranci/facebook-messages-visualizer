@@ -20,6 +20,8 @@ def writeToFrequencyFile(mostFrequent, frequency_file_name, participants):
             for participant in participants:
                 if (participant["name"] in mostUsedWord[1]):
                     body += str(mostUsedWord[1][participant["name"]]) + ","
+                else:
+                    body += "0,"
             body += "\n"
         file.write(body.encode("utf-8"))
         file.close()
@@ -74,15 +76,15 @@ def populateFrequencyDicts(data, mostFrequent, senders):
         messageContents = message.get("content", "")
         wordsInMessage = messageContents.split()
         wordsInMessage = list(filter(lambda word: word.lower() not in stopWords, wordsInMessage))
-        bigramsList = list(map (lambda bigram: bigram[0].lower() + " " + bigram[1].lower(), bigrams(wordsInMessage)))
-        """
+        bigramsList = list(map(lambda bigram: bigram[0].lower() + " " + bigram[1].lower(), bigrams(wordsInMessage)))
+        
         for word in wordsInMessage:
             word = word.lower()
             insertIntoMostFrequent(mostFrequent, message, word)
-        """
+        
         for bigram in bigramsList:
             insertIntoMostFrequent(mostFrequent, message, bigram)
-            
+           
 
 def getMostUsed(mostFrequent, start, end):
     wordFrequencyList = list(mostFrequent.items())
