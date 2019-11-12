@@ -17,6 +17,7 @@ var iconv = require('iconv-lite');
 })
 export class MessageLoaderService {
     fs: typeof fs;
+    // stopwords taken from python nltk library with some additions
     public static WHITELIST: Set<string> = new Set(["i", "me", "my", "myself", "we", "our", "ours", 
         "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", 
         "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", 
@@ -43,7 +44,7 @@ export class MessageLoaderService {
             properties: ['openFile'],
             filters: [{name: 'Messages', extensions: ['json']}]
           })
-        if (files.length > 0) {
+        if (files && files.length > 0) {
             this._spinner.show();
             const callback = bindNodeCallback(fs.readFile);
             this.time = Date.now();
@@ -108,8 +109,6 @@ export class MessageLoaderService {
                 storedWords: numToInsert,
                 totalMessages: totalMessages
             }
-            await this._databaseService.insertIntoTable(DatabaseService.CONVERSATION_TABLE, conversationModel)
-                .catch(err => console.log(err));
             let currentEnd: number = 0;
             for (let i = 0; i < iterations; i++) {
                 await this._databaseService.insertIntoTable(DatabaseService.WORDS_TABLE, words.slice(currentEnd, currentEnd + 100))
@@ -117,6 +116,9 @@ export class MessageLoaderService {
                 currentEnd += 100;
             }
             await this._databaseService.insertIntoTable(DatabaseService.WORDS_TABLE, words.slice(currentEnd, numToInsert))
+                .catch(err => console.log(err));
+            // insert conversation history last
+            await this._databaseService.insertIntoTable(DatabaseService.CONVERSATION_TABLE, conversationModel)
                 .catch(err => console.log(err));
     }
 
@@ -132,31 +134,17 @@ export class MessageLoaderService {
                 if (messageModel.hasOwnProperty('content')) {
                     const dateString: string = new Date(messageModel.timestamp_ms).toDateString();
                     const sender: string = messageModel.sender_name;
-                    const formattedContent: string = this._getCleanedString(messageModel.content);
+                    const formattedContent: string = this._cleanString(messageModel.content);
                     const tokens: Array<string> = formattedContent.split(' ');
                     totalWords += tokens.length;
-                    for (let i = 1; i <= MessageLoaderService.DEFAULTNGRAMS; i++) {
-                        let ngrams: Array<Array<string>> = this._generateNGrams(tokens, i);
-                        ngrams.forEach((words: Array<string>) => {
-                            const wordToInsert: string = words.join(' ');
-                            // remove stopwords from whitelist as they are not interesting
-                            if (Number.isNaN(Number(wordToInsert)) && 
-                                wordToInsert.length > 1 && 
-                                words.every(word => !MessageLoaderService.WHITELIST.has(word))) {
-                                if (wordObject.hasOwnProperty(wordToInsert)) {
-                                    this._incrementWordFrequencies(wordObject, wordToInsert, sender, dateString);
-                                } else {
-                                    this._initWordFrequencies(wordObject, wordToInsert, sender, dateString);
-                                }
-                            }
-                        })
-                    }
+                    this._processNGrams(tokens, wordObject, sender, dateString);
                 }
-            })
+            });
             const sortedNames: Array<string> = Object.keys(wordObject).sort(
                 (nameA: string, nameB: string) => {
-                    return this.getTotalFrequency(wordObject[nameB].frequencies) - this.getTotalFrequency(wordObject[nameA].frequencies);
-            })
+                    return this.getTotalFrequency(wordObject[nameB].frequencies) - 
+                        this.getTotalFrequency(wordObject[nameA].frequencies);
+            });
             const wordArray: Array<WordModel> = sortedNames.map((name) => {
                 return {
                     word: name,
@@ -165,7 +153,6 @@ export class MessageLoaderService {
                     dates: JSON.stringify(wordObject[name].dates)
                 }
             });
-            console.log(wordArray);
             console.log(Date.now() - this.time);
             return {
                 words: wordArray,
@@ -173,7 +160,32 @@ export class MessageLoaderService {
             };
     }
 
-    private _getCleanedString(str: string): string {
+    private _processNGrams(
+        tokens: Array<string>, 
+        wordObject: {}, 
+        sender: string, 
+        dateString: string): void {
+        for (let n = 1; n <= MessageLoaderService.DEFAULTNGRAMS; n++) {
+            let ngrams: Array<Array<string>> = this._generateNGrams(tokens, n);
+            ngrams.forEach((words: Array<string>) => {
+                const wordToInsert: string = words.join(' ');
+                // filter numbers and anything in the whitelist
+                if (Number.isNaN(Number(wordToInsert)) && 
+                    wordToInsert.length > 1 && 
+                    words.every(word => !MessageLoaderService.WHITELIST.has(word))) {
+                    if (wordObject.hasOwnProperty(wordToInsert)) {
+                        this._incrementWordFrequencies(wordObject, wordToInsert, sender, dateString);
+                    } else {
+                        this._initWordFrequencies(wordObject, wordToInsert, sender, dateString);
+                    }
+                }
+            });
+        }
+    }
+
+    private _cleanString(str: string): string {
+        // fb messages are encoded with latin1, so have to encode strings as latin1 
+        // before reading as utf-8
         return iconv.decode(iconv.encode(str.toLowerCase(), 'latin1'), 'utf-8');
     }
 

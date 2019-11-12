@@ -51,13 +51,11 @@ export class DatabaseService {
             table.json('frequencies'),
             // Json representing all dates word is used
             table.json('dates'),
-            table.foreign('displayName').references('displayName').inTable(DatabaseService.CONVERSATION_TABLE),
             table.primary(['word', 'displayName'])
         });
         await this.db.schema.createTableIfNotExists(DatabaseService.PAST_SEARCHES_TABLE, (table) => {
             table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING),
             table.json('search'),
-            table.foreign('displayName').references('displayName').inTable(DatabaseService.CONVERSATION_TABLE),
             table.primary('displayName')
         });
         this._createdTablesObservable.next(true);
