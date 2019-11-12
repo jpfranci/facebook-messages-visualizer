@@ -11,13 +11,10 @@ import { AppConfig } from '../environments/environment';
 export class AppComponent {
   constructor(
     public electronService: ElectronService,
-    private messageLoaderService: MessageLoaderService,
     private translate: TranslateService
   ) {
     translate.setDefaultLang('en');
     console.log('AppConfig', AppConfig);
-
-   // messageLoaderService.lol.subscribe((content) => console.log(content));
 
     if (electronService.isElectron) {
       console.log(process.env);

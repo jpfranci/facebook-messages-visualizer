@@ -20,5 +20,7 @@ module.exports = (config, options) => {
         }
     }
 
+    config.externals = { 'sqlite3':'commonjs sqlite3' }
+
     return config;
 }

@@ -48,3 +48,8 @@ package-lock.json
 # System Files
 .DS_Store
 Thumbs.db
+
+# Database Files
+*.sqlite
+*.db
+*.db-journal

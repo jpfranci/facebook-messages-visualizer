@@ -74,20 +74,35 @@
     "npm-run-all": "4.1.5",
     "rxjs": "6.5.3",
     "spectron": "9.0.0",
+    "ts-loader": "^6.2.1",
     "ts-node": "8.3.0",
     "tslint": "5.20.0",
     "typescript": "3.5.3",
     "wait-on": "3.3.0",
     "webdriver-manager": "12.1.5",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
     "zone.js": "0.9.1"
   },
   "engines": {
     "node": ">=10.9.0"
   },
   "dependencies": {
+    "@angular/animations": "^8.2.13",
+    "bootstrap": "4.1.1",
     "electron-rebuild": "^1.8.6",
     "fix-utf8": "^1.1.1",
-    "sqlite3": "^4.0.3",
+    "iconv": "^2.3.5",
+    "iconv-lite": "^0.4.9",
+    "jquery": "^3.4.1",
+    "knex": "^0.20.1",
+    "mssql": "^6.0.0",
+    "natural": "^0.6.3",
+    "ngx-bootstrap": "^5.2.0",
+    "ngx-spinner": "^8.0.3",
+    "node-pre-gyp": "^0.14.0",
+    "popper.js": "^1.16.0",
+    "sqlite3": "^4.0.9",
     "utf8": "^3.0.0"
   }
 }

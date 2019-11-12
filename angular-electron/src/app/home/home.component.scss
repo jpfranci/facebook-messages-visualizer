@@ -1,8 +1,7 @@
 .container {
   height: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
 
   background: url(../../assets/background.jpg) no-repeat center fixed;
   -webkit-background-size: cover; /* pour anciens Chrome et Safari */
@@ -11,6 +10,12 @@
   .title {
     color: white;
     margin: 0;
+    align-self: center;
+    justify-self: start;
     padding: 50px 20px;
+  }
+
+  .alert {
+    margin-top: auto;
   }
 }
