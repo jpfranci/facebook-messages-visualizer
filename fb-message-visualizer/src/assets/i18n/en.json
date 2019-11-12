@@ -1,7 +1,8 @@
 {
   "PAGES": {
       "HOME": {
-          "TITLE": "Facebook Message Visualizer"
+          "TITLE": "Facebook Message Visualizer",
+          "NO_DATA_TITLE": "Looks like you have no data yet."
       }
   }
 }

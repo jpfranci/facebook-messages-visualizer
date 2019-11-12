@@ -10,6 +10,7 @@ import { WordModel } from '../../models/word-model';
 import { NgxSpinnerService } from "ngx-spinner";
 import { ConversationModel } from '../../models/conversation-model';
 import { MessageProvider } from './message-provider';
+import { Message } from '@angular/compiler/src/i18n/i18n_ast';
 var iconv = require('iconv-lite');
 
 @Injectable({
@@ -68,20 +69,22 @@ export class MessageLoaderService {
         const participants = messages.participants.map(participant => participant.name);
         let wordsDetail: {words: Array<WordModel>, totalWords: number} = 
             this.createDatabaseRepresentation(messages, messages.title);
-        const totalWords: number = wordsDetail.totalWords;
-        const processedWords: number = wordsDetail.words.length;
-        const totalMessages: number = messages.messages.length;
-        this._messageProvider.setMemoryModel(wordsDetail.words);
-        this.insertWords(
-            wordsDetail.words, 
-            messages.title, 
-            participants, 
-            totalWords, 
-            processedWords, 
-            totalMessages);
+        const numToInsert: number = wordsDetail.words.length > MessageLoaderService.DEFAULT_DB_STORAGE ? 
+        MessageLoaderService.DEFAULT_DB_STORAGE : wordsDetail.words.length;
+        const conversationModel: ConversationModel = {
+            displayName: messages.title,
+            participants: participants.join(),
+            totalWords: wordsDetail.totalWords,
+            nGrams: MessageLoaderService.DEFAULTNGRAMS,
+            processedWords: wordsDetail.words.length,
+            storedWords: numToInsert,
+            totalMessages: messages.messages.length
+        }
+        this._messageProvider.setMemoryModel(wordsDetail.words, conversationModel);
+        this.insertWords(wordsDetail.words, numToInsert, conversationModel);
     }
 
-    private getTotalFrequency(frequencies: {}): number {
+    public getTotalFrequency(frequencies: {}): number {
         let accum = 0;
         for (let name in frequencies) {
             if (frequencies.hasOwnProperty(name)) {
@@ -92,23 +95,10 @@ export class MessageLoaderService {
     }
 
     private async insertWords(
-        words: Array<WordModel>,
-        displayName: string,
-        participants: Array<string>,
-        totalWords: number, 
-        processedWords: number, 
-        totalMessages: number): Promise<void> {
-            const numToInsert: number = words.length > MessageLoaderService.DEFAULT_DB_STORAGE ? 
-                MessageLoaderService.DEFAULT_DB_STORAGE : words.length;
-            const iterations: number = Math.floor(numToInsert / 100);
-            const conversationModel: ConversationModel = {
-                displayName: displayName,
-                participants: participants.join(),
-                totalWords: totalWords,
-                processedWords: processedWords,
-                storedWords: numToInsert,
-                totalMessages: totalMessages
-            }
+        words: Array<WordModel>, 
+        numToInsert: number, 
+        conversationModel: ConversationModel): Promise<void> {
+            const iterations = Math.floor(numToInsert / 100);
             let currentEnd: number = 0;
             for (let i = 0; i < iterations; i++) {
                 await this._databaseService.insertIntoTable(DatabaseService.WORDS_TABLE, words.slice(currentEnd, currentEnd + 100))
@@ -154,6 +144,7 @@ export class MessageLoaderService {
                 }
             });
             console.log(Date.now() - this.time);
+            wordObject = {};
             return {
                 words: wordArray,
                 totalWords: totalWords
@@ -172,7 +163,7 @@ export class MessageLoaderService {
                 // filter numbers and anything in the whitelist
                 if (Number.isNaN(Number(wordToInsert)) && 
                     wordToInsert.length > 1 && 
-                    words.every(word => !MessageLoaderService.WHITELIST.has(word))) {
+                    words.some(word => !MessageLoaderService.WHITELIST.has(word))) {
                     if (wordObject.hasOwnProperty(wordToInsert)) {
                         this._incrementWordFrequencies(wordObject, wordToInsert, sender, dateString);
                     } else {

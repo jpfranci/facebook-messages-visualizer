@@ -2,20 +2,38 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: space-around;
+}
 
+.alert {
+  margin-top: auto;
+}
+
+.loadTab {
+  height: 65vh;
+}
+
+.home {
   background: url(../../assets/background.jpg) no-repeat center fixed;
   -webkit-background-size: cover; /* pour anciens Chrome et Safari */
   background-size: cover; /* version standardisée */
+  height: 100%;
+  display: flex; 
+  flex-direction: column;
+}
 
-  .title {
-    color: white;
-    margin: 0;
-    align-self: center;
-    justify-self: start;
-    padding: 50px 20px;
-  }
+.tabset {
+  flex-grow: 1;
+}
 
-  .alert {
-    margin-top: auto;
-  }
+.tab-header {
+  justify-self: flex-start;
+}
+
+.title {
+  color: white;
+  margin: 0;
+  align-self: center;
+  justify-self: start;
+  padding: 50px 20px;
 }

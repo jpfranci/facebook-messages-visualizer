@@ -1,16 +1,30 @@
-<div class="container">
+<div class = "home">
   <h1 class="title">
     {{ 'PAGES.HOME.TITLE' | translate }}
   </h1>
-  <button type = "button" (click) = "onClick()">
-  </button>
+  <tabset class = "tabset">
+      <tab *ngIf = "this._messageProvider._hasDataSubject | async" heading = 'Select Data to Visualize' active = "true">
+        <search-component></search-component>
+      </tab>
+      <tab heading = 'Load Data' class = "loadTab">
+        <div class = "container">
+          <h1 class = "intro-header">
+            {{ 'PAGES.HOME.NO_DATA_TITLE' | translate }}
+          </h1>
+          <div *ngIf = "!(this._messageProvider._hasDataSubject | async)">
+            <p></p>
+          </div>
+          <button type = "button" (click) = "onClick()"></button>
+        </div>
+    </tab>
+  </tabset>
   <div *ngFor = "let alert of _alerts" class = 'alert'>
-    <alert 
-      [type] = "alert.type"
-      [dismissible] = "alert.dismissible"
-      [dismissOnTimeout]="alert.timeout"
-      (onClosed) = "onClosed(alert)">
-      {{ alert.msg }}
-    </alert>
-  </div>
+      <alert 
+        [type] = "alert.type"
+        [dismissible] = "alert.dismissible"
+        [dismissOnTimeout]="alert.timeout"
+        (onClosed) = "onClosed(alert)">
+        {{ alert.msg }}
+      </alert>
+    </div>
 </div>

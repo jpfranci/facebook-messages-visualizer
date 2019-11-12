@@ -3,6 +3,7 @@ import { from, BehaviorSubject, Observable } from 'rxjs';
 import { WordModel } from '../../models/word-model';
 import { ConversationModel } from '../../models/conversation-model';
 import { MessageModel } from "../../models/message-model";
+import { MessageProvider } from "../fb-message-loader/message-provider";
 @Injectable({
     providedIn: 'root'
 }) 
@@ -18,7 +19,7 @@ export class DatabaseService {
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: './data.db',
+              filename: './data3.db',
             },
           });
         
@@ -40,6 +41,7 @@ export class DatabaseService {
             // comma separated string
             table.string('participants', DatabaseService.MAX_CHARACTERS_STRING),
             table.integer('totalWords'),
+            table.integer('nGrams'),
             table.integer('processedWords'),
             table.integer('storedWords'),
             table.integer('totalMessages')
@@ -65,7 +67,15 @@ export class DatabaseService {
         return this.db.insert(values).into(tableName);
     }
 
-    public getAllFromTable(tableName: string): Promise<Array<ConversationModel>> | Promise<Array<MessageModel>> {
+    public getAllFromTable(tableName: string): Promise<Array<ConversationModel>> | Promise<Array<WordModel>> {
         return this.db(tableName);
+    }
+
+    public getAllFromTableWithDisplayName(tableName: string, displayName: string): Promise<Array<WordModel>> {
+        return this.db(tableName).where({displayName: displayName}).catch(err => console.log(err));
+    }
+
+    public getAllWordsThatMatchPattern(tableName: string, pattern: string): Promise<Array<WordModel>> {
+        return this.db(tableName).where('word', 'like', '%like%');
     }
 }

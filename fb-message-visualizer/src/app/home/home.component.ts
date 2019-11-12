@@ -10,7 +10,6 @@ import { Router } from '@angular/router';
 export class HomeComponent {
   private _alerts: Array<any>;
   constructor(private _messageLoaderService: MessageLoaderService, 
-              private _router: Router,
               private _messageProvider: MessageProvider) {
     this._alerts = [];
   }

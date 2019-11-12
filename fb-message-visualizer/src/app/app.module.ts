@@ -20,6 +20,8 @@ import { HomeModule } from './home/home.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AlertModule } from 'ngx-bootstrap/alert';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -33,6 +35,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     FormsModule,
     HttpClientModule,
     CoreModule,
+    NgbModule,
     NgxSpinnerModule,
     SharedModule,
     HomeModule,
@@ -45,7 +48,8 @@ export function HttpLoaderFactory(http: HttpClient) {
       }
     }),
     BrowserAnimationsModule,
-    AlertModule.forRoot()
+    AlertModule.forRoot(),
+    TypeaheadModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]
