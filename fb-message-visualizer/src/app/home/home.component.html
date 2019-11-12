@@ -1,0 +1,16 @@
+<div class="container">
+  <h1 class="title">
+    {{ 'PAGES.HOME.TITLE' | translate }}
+  </h1>
+  <button type = "button" (click) = "onClick()">
+  </button>
+  <div *ngFor = "let alert of _alerts" class = 'alert'>
+    <alert 
+      [type] = "alert.type"
+      [dismissible] = "alert.dismissible"
+      [dismissOnTimeout]="alert.timeout"
+      (onClosed) = "onClosed(alert)">
+      {{ alert.msg }}
+    </alert>
+  </div>
+</div>
