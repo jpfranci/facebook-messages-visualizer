@@ -1,6 +1,6 @@
 {
   "name": "fb-message-visualizer",
-  "version": "0.0",
+  "version": "0.1.0",
   "homepage": "https://github.com/jpfranci/fb-messages-visualizer",
   "main": "main.js",
   "private": true,
