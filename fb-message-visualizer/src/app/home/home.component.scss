@@ -14,9 +14,9 @@
 }
 
 .home {
-  background: url(../../assets/background.jpg) no-repeat center fixed;
-  -webkit-background-size: cover; /* pour anciens Chrome et Safari */
-  background-size: cover; /* version standardisée */
+  // background: url(../../assets/background.jpg) no-repeat center fixed;
+  // -webkit-background-size: cover; /* pour anciens Chrome et Safari */
+  // background-size: cover; /* version standardisée */
   height: 100%;
   display: flex; 
   flex-direction: column;
@@ -31,7 +31,7 @@
 }
 
 .title {
-  color: white;
+  color: black;
   margin: 0;
   align-self: center;
   justify-self: start;

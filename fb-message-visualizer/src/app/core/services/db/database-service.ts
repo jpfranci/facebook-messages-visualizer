@@ -19,7 +19,7 @@ export class DatabaseService {
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: './data3.db',
+              filename: './test5.db',
             },
           });
         
@@ -44,7 +44,8 @@ export class DatabaseService {
             table.integer('nGrams'),
             table.integer('processedWords'),
             table.integer('storedWords'),
-            table.integer('totalMessages')
+            table.integer('totalMessages'),
+            table.json('dates')
         });
         await this.db.schema.createTableIfNotExists(DatabaseService.WORDS_TABLE, (table) => {
             table.string('word'),
@@ -71,7 +72,7 @@ export class DatabaseService {
         return this.db(tableName);
     }
 
-    public getAllFromTableWithDisplayName(tableName: string, displayName: string): Promise<Array<WordModel>> {
+    public getAllFromTableWithDisplayName(tableName: string, displayName: string): Promise<any> {
         return this.db(tableName).where({displayName: displayName}).catch(err => console.log(err));
     }
 

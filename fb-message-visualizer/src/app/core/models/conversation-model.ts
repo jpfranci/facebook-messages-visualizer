@@ -5,5 +5,7 @@ export interface ConversationModel {
     nGrams: number,
     processedWords: number,
     storedWords: number,
-    totalMessages: number
+    totalMessages: number,
+    // json object of participant: { date: occurences }*
+    dates: string
 }

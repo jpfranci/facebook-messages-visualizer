@@ -67,7 +67,7 @@ export class MessageLoaderService {
 
     public processMessages(messages: FacebookMessagesModel): void {
         const participants = messages.participants.map(participant => participant.name);
-        let wordsDetail: {words: Array<WordModel>, totalWords: number} = 
+        let wordsDetail: {words: Array<WordModel>, totalWords: number, dates: {}} = 
             this.createDatabaseRepresentation(messages, messages.title);
         const numToInsert: number = wordsDetail.words.length > MessageLoaderService.DEFAULT_DB_STORAGE ? 
         MessageLoaderService.DEFAULT_DB_STORAGE : wordsDetail.words.length;
@@ -78,7 +78,8 @@ export class MessageLoaderService {
             nGrams: MessageLoaderService.DEFAULTNGRAMS,
             processedWords: wordsDetail.words.length,
             storedWords: numToInsert,
-            totalMessages: messages.messages.length
+            totalMessages: messages.messages.length,
+            dates: JSON.stringify(wordsDetail.dates)
         }
         this._messageProvider.setMemoryModel(wordsDetail.words, conversationModel);
         this.insertWords(wordsDetail.words, numToInsert, conversationModel);
@@ -116,14 +117,17 @@ export class MessageLoaderService {
         facebookMessageModel: FacebookMessagesModel, 
         oDisplayName: string): {
             words: Array<WordModel>,
-            totalWords: number 
+            totalWords: number ,
+            dates: {}
         } {
             let totalWords: number = 0;
             let wordObject: {} = {};
+            let dates: {} = {};
             facebookMessageModel.messages.forEach((messageModel: MessageModel) => {
+                const dateString: string = new Date(messageModel.timestamp_ms).toDateString();
+                const sender: string = messageModel.sender_name;
+                this._addToDates(dates, dateString, sender);
                 if (messageModel.hasOwnProperty('content')) {
-                    const dateString: string = new Date(messageModel.timestamp_ms).toDateString();
-                    const sender: string = messageModel.sender_name;
                     const formattedContent: string = this._cleanString(messageModel.content);
                     const tokens: Array<string> = formattedContent.split(' ');
                     totalWords += tokens.length;
@@ -147,8 +151,23 @@ export class MessageLoaderService {
             wordObject = {};
             return {
                 words: wordArray,
-                totalWords: totalWords
+                totalWords: totalWords, 
+                dates: dates
             };
+    }
+
+    private _addToDates(dates: {}, dateString: string, sender: string): void {
+        if (dates.hasOwnProperty(sender)) {
+            if (dates[sender].hasOwnProperty(dateString)) {
+                dates[sender][dateString] = dates[sender][dateString] + 1;
+            } else {
+                dates[sender][dateString] = 1;
+            }
+        } else {
+            dates[sender] = {
+                [dateString]: 1
+            }
+        }
     }
 
     private _processNGrams(

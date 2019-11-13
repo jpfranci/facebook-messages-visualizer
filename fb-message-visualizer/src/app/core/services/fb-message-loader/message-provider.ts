@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, from, Observable } from 'rxjs';
-import { take, switchMap, filter } from 'rxjs/operators';
+import { take, switchMap, filter, map } from 'rxjs/operators';
 import { WordModel } from '../../models/word-model';
 import { DatabaseService } from '../db/database-service';
 import { ConversationModel } from '../../models';
@@ -64,6 +64,14 @@ export class MessageProvider {
                     displayName));
             }
         }
+    }
+
+    public getConversationModel(displayName: string): Observable<ConversationModel> {
+        return from(this._databaseService.getAllFromTableWithDisplayName(DatabaseService.CONVERSATION_TABLE, displayName)
+            ).pipe(
+                filter((conversationModels: Array<ConversationModel>) => conversationModels.length > 0),
+                map((conversationModels: Array<ConversationModel>) => conversationModels[0])
+            );
     }
 
     public get inMemorySubject(): BehaviorSubject<Array<WordModel>> {
