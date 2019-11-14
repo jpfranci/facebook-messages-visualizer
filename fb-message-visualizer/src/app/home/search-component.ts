@@ -2,11 +2,14 @@ import { Component, ElementRef, ViewChild } from "@angular/core";
 import { MessageProvider, MessageLoaderService } from "../core/services";
 import { ConversationModel, WordModel, MessageModel } from "../core/models";
 import { Observable } from "rxjs";
-import { tap, map, mergeMap, take, debounceTime, distinctUntilChanged, filter, switchMap } from "rxjs/operators";
+import { tap, map, mergeMap, take, debounceTime, distinctUntilChanged, filter, switchMap, takeWhile } from "rxjs/operators";
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import { BsDropdownConfig, BsDropdownContainerComponent } from 'ngx-bootstrap/dropdown';
 import { ChartPoint, ChartOptions } from 'chart.js';
 import { SingleDataSet } from "ng2-charts";
+import _ from "lodash";
+import * as moment from 'moment';
+import { MessageFormatterService } from "../core/services/fb-message-loader/message-formatter-service";
 
 @Component({
     selector: 'search-component',
@@ -27,16 +30,19 @@ export class SearchComponent {
   private _chartType: string;
   private _fromWordFilterOption: number;
   private _chartOptions: ChartOptions; 
-  constructor(private _messageProvider: MessageProvider, private _messageLoaderService: MessageLoaderService) {
+  constructor(
+    private _messageProvider: MessageProvider, 
+    private _messageLoaderService: MessageLoaderService,
+    private _messageFormatterService: MessageFormatterService) {
       this._inputText = "You must pick a conversation to analyze before you begin";
       this._wordLengthFilter = "Number of words filter"
       this._dataset = [{data: [], label: ""}];
-      this._chartType = "line";
+      this._chartType = "bar";
       this._chartOptions = {
         responsive: true,
         title: {
           display: true,
-          text: "Total Message Count by Month"
+          text: "Message Count by Month"
         },
         maintainAspectRatio: false,
         scales: {
@@ -47,19 +53,24 @@ export class SearchComponent {
               unit: 'month'
            },
            ticks: {
-             maxTicksLimit: 10
+             maxTicksLimit: 20
            }
           }]
         }
       }
-      this._messageProvider.hasDataSubject.pipe(
-        filter((hasDataSubject) => hasDataSubject),
-        switchMap(() => this._messageProvider.getConversationModel("Universal studios")))
-      .subscribe((conversationModel: ConversationModel) => {
-        console.log(conversationModel);
+      this._messageProvider.availableConversations.pipe(
+        filter((availableConversations: ConversationModel[]) => availableConversations.length > 0),
+        take(1)
+      )
+      .subscribe((conversationModels: ConversationModel[]) => {
+        const conversationModel = conversationModels[0];
         this.onConversationSelect(conversationModel);
         const dates = JSON.parse(conversationModel.dates);
-        this._dataset = this._getTotalDates(dates, conversationModel.totalMessages);
+        this._dataset = this._messageFormatterService.getTotalDates(
+            dates, 
+            conversationModel.totalMessages, 
+            conversationModel.startDate,
+            conversationModel.endDate);
       })
         
       this._messageProvider.inMemorySubject.subscribe((wordModels: Array<WordModel>) => {
@@ -67,43 +78,6 @@ export class SearchComponent {
           this._wordOptions = this._messageProvider.inMemorySubject;
         }
       })
-  }
-
-  private _getTotalDates(dates: {}, total: number): Array<{data: SingleDataSet, label: string}> {
-    const names: Array<string> = Object.keys(dates);
-    const dateMap: Map<string, number> = new Map();
-    names.forEach((name: string) => {
-      const datesUsed: Array<string> = Object.keys(dates[name]);
-      datesUsed.forEach((dateUsed : string) => {
-        let numberOfTimesUsed: number = dateMap.get(dateUsed);
-        numberOfTimesUsed = numberOfTimesUsed ? numberOfTimesUsed : 0;
-        dateMap.set(dateUsed, numberOfTimesUsed + dates[name][dateUsed]);
-      }); 
-    });
-
-    const totalDates: Array<ChartPoint> = [];
-    let keys = Array.from(dateMap.keys());
-    keys.sort((a, b) => {
-      let dateA = new Date(a);
-      let dateB = new Date(b);
-      if (dateA.getTime() < dateB.getTime()) {
-        return 1;
-      } else if (dateA.getTime() > dateB.getTime()) {
-        return -1;
-      } else {
-        return 0;
-      }
-    });
-    let prev = total;
-    keys.forEach((date: string) => {
-      const numberOfTimesUsed = dateMap.get(date)
-      totalDates.push({
-        t: new Date(date),
-        y: prev - numberOfTimesUsed
-      })
-      prev -= numberOfTimesUsed;
-    })
-    return [{data: totalDates, label: 'total'}];
   }
 
   _onType = (searchTerm: Observable<string>): Observable<Array<WordModel>> => {

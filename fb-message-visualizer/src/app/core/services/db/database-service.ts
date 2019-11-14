@@ -19,7 +19,7 @@ export class DatabaseService {
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: './test5.db',
+              filename: './test7.db',
             },
           });
         
@@ -35,32 +35,46 @@ export class DatabaseService {
         // await this.db.schema.dropTableIfExists(DatabaseService.CONVERSATION_TABLE);
         // await this.db.schema.dropTableIfExists(DatabaseService.WORDS_TABLE);
         // await this.db.schema.dropTableIfExists(DatabaseService.PAST_SEARCHES_TABLE);
-        await this.db.schema.createTableIfNotExists(DatabaseService.CONVERSATION_TABLE, (table) => {
-            // Display name on facebook 
-            table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING).primary(),
-            // comma separated string
-            table.string('participants', DatabaseService.MAX_CHARACTERS_STRING),
-            table.integer('totalWords'),
-            table.integer('nGrams'),
-            table.integer('processedWords'),
-            table.integer('storedWords'),
-            table.integer('totalMessages'),
-            table.json('dates')
-        });
-        await this.db.schema.createTableIfNotExists(DatabaseService.WORDS_TABLE, (table) => {
-            table.string('word'),
-            table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING),
-            // Frequencies for all participants
-            table.json('frequencies'),
-            // Json representing all dates word is used
-            table.json('dates'),
-            table.primary(['word', 'displayName'])
-        });
-        await this.db.schema.createTableIfNotExists(DatabaseService.PAST_SEARCHES_TABLE, (table) => {
-            table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING),
-            table.json('search'),
-            table.primary('displayName')
-        });
+        let doesExist: boolean = await this.db.schema.hasTable(DatabaseService.CONVERSATION_TABLE);
+        if (!doesExist) {
+            await this.db.schema.createTable(DatabaseService.CONVERSATION_TABLE, (table) => {
+                // Display name on facebook 
+                table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING).primary(),
+                // comma separated string
+                table.string('participants', DatabaseService.MAX_CHARACTERS_STRING),
+                table.integer('totalWords'),
+                table.integer('nGrams'),
+                table.integer('processedWords'),
+                table.integer('storedWords'),
+                table.integer('totalMessages'),
+                table.json('dates'),
+                table.string('startDate'),
+                table.string('endDate')
+            });
+        }
+        
+        doesExist = await this.db.schema.hasTable(DatabaseService.WORDS_TABLE);
+        if (!doesExist) {
+            await this.db.schema.createTableIfNotExists(DatabaseService.WORDS_TABLE, (table) => {
+                table.string('word'),
+                table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING),
+                // Frequencies for all participants
+                table.json('frequencies'),
+                // Json representing all dates word is used
+                table.json('dates'),
+                table.primary(['word', 'displayName'])
+            });
+        }
+        
+        doesExist = await this.db.schema.hasTable(DatabaseService.PAST_SEARCHES_TABLE);
+        if(!doesExist) {
+            await this.db.schema.createTableIfNotExists(DatabaseService.PAST_SEARCHES_TABLE, (table) => {
+                table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING),
+                table.json('search'),
+                table.primary('displayName')
+            });
+        }
+
         this._createdTablesObservable.next(true);
     }
 

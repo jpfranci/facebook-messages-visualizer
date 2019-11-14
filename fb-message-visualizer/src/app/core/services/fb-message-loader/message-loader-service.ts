@@ -79,7 +79,9 @@ export class MessageLoaderService {
             processedWords: wordsDetail.words.length,
             storedWords: numToInsert,
             totalMessages: messages.messages.length,
-            dates: JSON.stringify(wordsDetail.dates)
+            dates: JSON.stringify(wordsDetail.dates),
+            startDate: new Date(messages.messages[messages.messages.length - 1].timestamp_ms).toString(),
+            endDate: new Date(messages.messages[0].timestamp_ms).toString()
         }
         this._messageProvider.setMemoryModel(wordsDetail.words, conversationModel);
         this.insertWords(wordsDetail.words, numToInsert, conversationModel);

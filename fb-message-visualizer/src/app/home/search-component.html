@@ -5,7 +5,7 @@
     </button>
     <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
         role="menu" aria-labelledby="button-animated">
-        <li role = "menuitem" *ngFor = "let conversationModel of _messageProvider._availableConversations | async">
+        <li role = "menuitem" *ngFor = "let conversationModel of _messageProvider.availableConversations | async">
             <a class = "dropdown-item" href="#" (click) = "onConversationSelect(conversationModel)">
                 {{ conversationModel.displayName }}
             </a>

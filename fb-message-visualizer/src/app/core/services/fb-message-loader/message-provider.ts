@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, from, Observable } from 'rxjs';
-import { take, switchMap, filter, map } from 'rxjs/operators';
+import { take, switchMap, filter, map, tap } from 'rxjs/operators';
 import { WordModel } from '../../models/word-model';
 import { DatabaseService } from '../db/database-service';
 import { ConversationModel } from '../../models';
@@ -18,8 +18,8 @@ export class MessageProvider {
         this._hasDataSubject = new BehaviorSubject<boolean>(false);
         this._availableConversations = new BehaviorSubject<Array<ConversationModel>>([]);
         this._databaseService.createdTablesObservable.pipe(
+            tap((areTablesCreated) => console.log(areTablesCreated)),
             filter((areTablesCreated: boolean) => areTablesCreated === true),
-            take(1),
             switchMap(() => from(this._databaseService.getAllFromTable(DatabaseService.CONVERSATION_TABLE))),
             take(1)
         ).subscribe(
@@ -72,6 +72,10 @@ export class MessageProvider {
                 filter((conversationModels: Array<ConversationModel>) => conversationModels.length > 0),
                 map((conversationModels: Array<ConversationModel>) => conversationModels[0])
             );
+    }
+
+    public get availableConversations(): Observable<Array<ConversationModel>> {
+        return this._availableConversations;
     }
 
     public get inMemorySubject(): BehaviorSubject<Array<WordModel>> {
