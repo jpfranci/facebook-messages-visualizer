@@ -2,13 +2,10 @@ import { Component, ElementRef, ViewChild } from "@angular/core";
 import { MessageProvider, MessageLoaderService } from "../core/services";
 import { ConversationModel, WordModel, MessageModel } from "../core/models";
 import { Observable } from "rxjs";
-import { tap, map, mergeMap, take, debounceTime, distinctUntilChanged, filter, switchMap, takeWhile } from "rxjs/operators";
+import { tap, map, take, debounceTime, distinctUntilChanged, filter, switchMap } from "rxjs/operators";
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
-import { BsDropdownConfig, BsDropdownContainerComponent } from 'ngx-bootstrap/dropdown';
-import { ChartPoint, ChartOptions } from 'chart.js';
+import { ChartOptions } from 'chart.js';
 import { SingleDataSet } from "ng2-charts";
-import _ from "lodash";
-import * as moment from 'moment';
 import { MessageFormatterService } from "../core/services/fb-message-loader/message-formatter-service";
 
 @Component({
@@ -65,12 +62,6 @@ export class SearchComponent {
       .subscribe((conversationModels: ConversationModel[]) => {
         const conversationModel = conversationModels[0];
         this.onConversationSelect(conversationModel);
-        const dates = JSON.parse(conversationModel.dates);
-        this._dataset = this._messageFormatterService.getTotalDates(
-            dates, 
-            conversationModel.totalMessages, 
-            conversationModel.startDate,
-            conversationModel.endDate);
       })
         
       this._messageProvider.inMemorySubject.subscribe((wordModels: Array<WordModel>) => {
@@ -130,9 +121,19 @@ export class SearchComponent {
     }
   }
 
+  private _showDefaultGraph(conversationModel: ConversationModel): void {
+    this._dataset = this._messageFormatterService.getTotalDates(
+      JSON.parse(conversationModel.dates),
+      conversationModel.totalMessages,
+      conversationModel.startDate,
+      conversationModel.endDate
+    )
+  }
+
   onConversationSelect(conversationModel: ConversationModel): void {
     this._inputText = conversationModel.displayName;
     this._selectedConversation = conversationModel;
+    this._showDefaultGraph(conversationModel);
     this._wordOptions = this._messageProvider.getWords(conversationModel.displayName, "");
   }
 }
