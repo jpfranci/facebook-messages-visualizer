@@ -19,7 +19,7 @@ export class DatabaseService {
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: './test7.db',
+              filename: './test10.db',
             },
           });
         
@@ -62,6 +62,8 @@ export class DatabaseService {
                 table.json('frequencies'),
                 // Json representing all dates word is used
                 table.json('dates'),
+                table.string('startDate'),
+                table.string('endDate')
                 table.primary(['word', 'displayName'])
             });
         }

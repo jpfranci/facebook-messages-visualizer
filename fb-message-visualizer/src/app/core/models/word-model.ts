@@ -3,5 +3,7 @@ export interface WordModel {
     displayName: string,
     // frequencies and dates are json strings
     frequencies: string,
-    dates: string
+    dates: string,
+    startDate: string,
+    endDate: string
 }

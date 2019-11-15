@@ -146,7 +146,9 @@ export class MessageLoaderService {
                     word: name,
                     displayName: oDisplayName,
                     frequencies: JSON.stringify(wordObject[name].frequencies),
-                    dates: JSON.stringify(wordObject[name].dates)
+                    dates: JSON.stringify(wordObject[name].dates),
+                    startDate: wordObject[name].startDate,
+                    endDate: wordObject[name].endDate
                 }
             });
             console.log(Date.now() - this.time);
@@ -218,11 +220,14 @@ export class MessageLoaderService {
                 [sender]: {
                     [dateString]: 1
                 }
-            }
+            },
+            startDate: dateString,
+            endDate: dateString
         }
     }
 
     private _incrementWordFrequencies(wordObject: {}, wordToInsert: string, sender: string, dateString: string): void {
+        wordObject[wordToInsert].startDate = dateString;
         if (wordObject[wordToInsert].frequencies.hasOwnProperty(sender)) {
             wordObject[wordToInsert].frequencies[sender] = wordObject[wordToInsert].frequencies[sender] + 1
         } else {

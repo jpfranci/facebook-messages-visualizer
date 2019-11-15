@@ -1,7 +1,6 @@
 <div class = "container">
     <canvas baseChart width = "100" height = "300"
-        [datasets] = "dataset"
-        [labels] = "[chartLabels]"
-        [chartType] = "chartType"
-        [options] = "chartOptions"></canvas>
+        [datasets] = "this._chartControl.dataset"
+        [chartType] = "this._chartControl.chartType"
+        [options] = "this._chartControl.chartOptions"></canvas>
 </div>
