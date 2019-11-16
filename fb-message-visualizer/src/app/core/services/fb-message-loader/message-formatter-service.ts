@@ -52,11 +52,17 @@ export class MessageFormatterService {
         toDate: (unitString: string) => new Date(unitString)
     };
 
-    public getTotalDates(dates: {}, total: number, startDate: string, endDate: string, numberOfTicks: number = 20): Array<{data: SingleDataSet, label: string}> {
+    public getTotalDates(
+        dates: {}, 
+        startDate: string, 
+        endDate: string, 
+        numberOfTicks: number,
+        participantsToProcess: string[]): {
+        dataset: Array<{data: SingleDataSet, label: string}>,
+        unit: string
+    } {
         const formatter: UnitFormatter = this._getUnitFormatters(startDate, endDate, numberOfTicks);
-        const names: Array<string> = Object.keys(dates);
-        const unitMap: Map<string, number> = this._populateUnitMap(names, formatter, dates);
-
+        const unitMap: Map<string, number> = this._populateUnitMap(participantsToProcess, formatter, dates, startDate, endDate);
         const units: Array<string> = this._getSortedUnits(unitMap, formatter);
         const totalDates: Array<ChartPoint> = [];
         let prev: number = 0;
@@ -69,17 +75,22 @@ export class MessageFormatterService {
           })
           // prev += numberOfTimesUsed;
         })
-        return [{data: totalDates, label: 'total'}];
+        return {dataset: [{data: totalDates, label: 'total'}], unit: formatter.unit};
     }
 
     private _populateUnitMap(
         participants: string[], 
         formatter: UnitFormatter,
-        dates: {}): Map<string, number> {
+        dates: {},
+        startDate: string,
+        endDate: string): Map<string, number> {
             const unitMap: Map<string, number> = new Map();
             participants.forEach((name: string) => {
-                const datesUsed: Array<string> = Object.keys(dates[name]);
-                const datesUsedGroupedByUnits: object = _.groupBy(datesUsed, formatter.groupByFunction)
+                let datesUsed: Array<string> = Object.keys(dates[name]);
+                datesUsed = datesUsed.filter((dateString: string) => {
+                    return moment(dateString).isBetween(startDate, endDate, null, "[]");
+                })
+                const datesUsedGroupedByUnits: object = _.groupBy(datesUsed, formatter.groupByFunction);
                 const units = Object.keys(datesUsedGroupedByUnits);
                 units.forEach((unit: string) => {
                 const allTimesInMonth: number = datesUsedGroupedByUnits[unit].reduce(

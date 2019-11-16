@@ -1,0 +1,24 @@
+<div class = "date-picker-component-container">
+    <label>{{ label }}</label>
+    <form class="form-inline">
+        <div class="form-group">
+            <div class="input-group">
+            <input class="form-control"
+                    name="dp" 
+                    [ngModel]="date"
+                    [minDate]="minDate"
+                    [maxDate]="maxDate"
+                    (ngModelChange) = "onDateChange($event)" 
+                    ngbDatepicker 
+                    #d="ngbDatepicker">
+            <div class="input-group-append">
+                <button 
+                    class="btn btn-outline-secondary calendar" 
+                    (click)="d.toggle()" 
+                    type="button">
+                </button>
+            </div>
+            </div>
+        </div>
+    </form>
+</div>

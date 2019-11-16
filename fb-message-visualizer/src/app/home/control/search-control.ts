@@ -1,6 +1,6 @@
 import {NgbTypeahead, NgbTypeaheadSelectItemEvent} from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
-import { WordModel, ConversationModel } from '../../core/models';
+import { WordModel, ConversationModel, ConversationModelConversions } from '../../core/models';
 import { debounceTime, distinctUntilChanged, tap, filter, switchMap, map, take } from 'rxjs/operators';
 import { MessageLoaderService, MessageProvider } from '../../core/services';
 import { MessageFormatterService } from '../../core/services/fb-message-loader/message-formatter-service';
@@ -13,10 +13,12 @@ export class SearchControl {
     public selectedConversationInput: string;
     public selectedWord: string;
     
-    public rawDataset: ConversationModel | Array<WordModel>;
+    public rawDataset: ConversationModel | WordModel;
     public dataset: Array<{data: SingleDataSet, label: string}>;
     public chartOptions: ChartOptions;
     public chartType: string;
+    public participants: Array<string>; 
+    public usedParticipants: Array<string>;
 
     private _wordModels: Observable<Array<WordModel>>;
     private _selectedConversation: ConversationModel;
@@ -26,6 +28,7 @@ export class SearchControl {
                 private _messageProvider: MessageProvider,
                 private _messageFormatterService: MessageFormatterService) {
       this.selectedConversationInput = "You must pick a conversation to analyze before you begin";
+      this.participants = [];
       this._initConversationModel();
       
       this._messageProvider.inMemorySubject.subscribe((wordModels: Array<WordModel>) => {
@@ -35,12 +38,10 @@ export class SearchControl {
       })
     }
 
-    public set ngbTypeahead(ngbTypeahead) {
+    public set ngbTypeahead(ngbTypeahead: NgbTypeahead) {
       this._ngbTypeahead = ngbTypeahead;
     }
-
    
-
     private _initConversationModel() {
       this._messageProvider.availableConversations.pipe(
         filter((availableConversations: ConversationModel[]) => availableConversations.length > 0),
@@ -58,6 +59,10 @@ export class SearchControl {
       } else {
         return MessageLoaderService.DEFAULTNGRAMS.toString();
       }
+    }
+
+    public changeUsedParticipants(newParticipantsToUse: Array<string>): void {
+      this.usedParticipants = newParticipantsToUse;
     }
     
     public onSelectWord(selectedItem: NgbTypeaheadSelectItemEvent): void {
@@ -95,6 +100,8 @@ export class SearchControl {
 
   public onConversationSelect(conversationModel: ConversationModel): void {
     this.selectedConversationInput = conversationModel.displayName;
+    this.usedParticipants = ConversationModelConversions.toParticipantsArray(conversationModel);
+    this.participants = ConversationModelConversions.toParticipantsArray(conversationModel);
     this._selectedConversation = conversationModel;
     this.rawDataset = conversationModel;
     this._wordModels = this._messageProvider.getWords(conversationModel.displayName, "");

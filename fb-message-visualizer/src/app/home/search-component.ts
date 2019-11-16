@@ -1,13 +1,10 @@
-import { Component, ElementRef, ViewChild } from "@angular/core";
+import { Component, ViewChild } from "@angular/core";
 import { MessageProvider, MessageLoaderService } from "../core/services";
-import { ConversationModel, WordModel, MessageModel } from "../core/models";
-import { Observable } from "rxjs";
-import { tap, map, take, debounceTime, distinctUntilChanged, filter, switchMap } from "rxjs/operators";
+import { WordModel } from "../core/models";
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
-import { ChartOptions } from 'chart.js';
-import { SingleDataSet } from "ng2-charts";
 import { MessageFormatterService } from "../core/services/fb-message-loader/message-formatter-service";
 import { SearchControl } from "./control/search-control";
+import { BsModalService, BsModalRef, ModalDirective } from 'ngx-bootstrap/modal';
 
 @Component({
     selector: 'search-component',
@@ -18,16 +15,22 @@ export class SearchComponent {
   @ViewChild(NgbTypeahead, {static: true}) 
   private _ngbTypeahead: NgbTypeahead;
   private _searchControl: SearchControl;
+  private _modalRef: BsModalRef;
 
   constructor(
     private _messageProvider: MessageProvider, 
     private _messageLoaderService: MessageLoaderService,
-    private _messageFormatterService: MessageFormatterService) {
+    private _messageFormatterService: MessageFormatterService,
+    private _modalService: BsModalService) {
       this._searchControl = new SearchControl(
         this._ngbTypeahead, 
         _messageLoaderService, 
         _messageProvider, 
         _messageFormatterService);
+  }
+
+  private openModal(template) {
+    this._modalRef = this._modalService.show(template);
   }
 
   ngAfterViewInit() {

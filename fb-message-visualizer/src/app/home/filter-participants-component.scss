@@ -1,0 +1,22 @@
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+
+    .participant-select-container {
+        margin: 10px 0px;
+        
+        .participant-label {
+            margin-left: 10px;
+        }
+    }
+    
+    .select-buttons-container {
+        display: flex;
+        .select-all {
+            min-width: 45%;
+            margin: 0 2.5%;
+            height: 3.5rem;
+        }
+    }
+}

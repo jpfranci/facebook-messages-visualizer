@@ -25,7 +25,7 @@
                     [(ngModel)] = "this._searchControl.fromWordFilterOption"
                     class = "filter-picker" 
                     (keyup.enter) = "dropdown.hide()"
-                    placeholder = "0"/>
+                    placeholder = "1"/>
                 <p>to</p>
                 <input 
                     [(ngModel)] = "this._searchControl.toWordFilterOption"
@@ -37,6 +37,9 @@
         </li>
     </ul>
 </div>
+<filter-participants 
+    [participants] = "this._searchControl.participants"
+    (onSelectParticipants) = "this._searchControl.changeUsedParticipants($event)"></filter-participants>
 <input type="text" 
        class="form-control" 
        placeholder="Search for words or phrases"
@@ -48,5 +51,6 @@
        #search>
 <chart-component
     class = "chart-component"
-    [rawDataset] = "this._searchControl.rawDataset">
+    [rawDataset] = "this._searchControl.rawDataset"
+    [participants] =  "this._searchControl.usedParticipants">
 </chart-component>

@@ -1,0 +1,32 @@
+<button type="button" class="btn btn-primary" (click)="showModal()">Pick who to include</button> 
+    <div 
+        class="modal fade" 
+        bsModal 
+        #modal="bs-modal"
+        role="dialog" 
+        aria-labelledby="dialog-events-name"
+        (onHide)="_onModalHide()">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h4 id="dialog-events-name" class="modal-title pull-left">Pick who to include</h4>
+                <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class = "participant-select-container" *ngFor = "let participant of participants">
+                    <input
+                        type = "checkbox"
+                        [checked] = "_participantsBuffer.includes(participant)"
+                        (change) = "_onParticipantClick(participant)"    
+                    >
+                    <span class = "participant-label">{{ participant }}</span>
+                </div>
+                <div class = "select-buttons-container">
+                    <button type="button" class="btn btn-primary select-all" (click)="_onSelectAll()">Select all</button>
+                    <button type="button" class="btn btn-primary select-all" (click)="_onUnselectAll()">Unselect all</button>  
+                </div>
+        </div>
+    </div>
+</div>
