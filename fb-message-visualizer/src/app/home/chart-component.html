@@ -1,4 +1,9 @@
 <div class = "container">
+    <canvas baseChart width = "100" height = "300"
+        [datasets] = "this._chartControl.dataset"
+        [chartType] = "this._chartControl.chartType"
+        [options] = "this._chartControl.chartOptions">
+    </canvas>
     <div class = "datepicker-container">
         <date-picker 
             [date]="_startDate" 
@@ -13,8 +18,4 @@
             [minDate]="_startDate"
             [maxDate]="_endDate"></date-picker>
     </div>
-    <canvas baseChart width = "100" height = "300"
-        [datasets] = "this._chartControl.dataset"
-        [chartType] = "this._chartControl.chartType"
-        [options] = "this._chartControl.chartOptions"></canvas>
 </div>

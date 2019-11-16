@@ -1,0 +1,14 @@
+<div class="btn-group dropdown" dropdown  [autoClose] = "true">
+    <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+            aria-controls="dropdown-animated">
+        {{ _conversionMap.get(_isTotal) }}
+    </button>
+    <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
+        role="menu" aria-labelledby="button-animated">
+        <li role = "menuitem" *ngFor = "let isTotal of this._isTotalKeys">
+            <a class = "dropdown-item" href="#" (click) = "_onSelect(isTotal)">
+                {{ _conversionMap.get(isTotal) }}
+            </a>
+        </li>
+    </ul>
+</div>

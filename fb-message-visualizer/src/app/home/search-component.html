@@ -1,45 +1,63 @@
-<div class="btn-group dropdown" dropdown  [autoClose] = "true">
-    <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+<div class = "filters-container">
+    <div class="btn-group dropdown" dropdown  [autoClose] = "true">
+        <button 
+            id="button-animated" 
+            dropdownToggle 
+            type="button" 
+            class="btn btn-primary dropdown-toggle"
             aria-controls="dropdown-animated">
-        {{ this._searchControl.selectedConversationInput }}
-    </button>
-    <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
-        role="menu" aria-labelledby="button-animated">
-        <li role = "menuitem" *ngFor = "let conversationModel of _messageProvider.availableConversations | async">
-            <a class = "dropdown-item" href="#" (click) = "this._searchControl.onConversationSelect(conversationModel)">
-                {{ conversationModel.displayName }}
-            </a>
-        </li>
-    </ul>
+            {{ "Currently viewing " + this._searchControl.selectedConversationInput }}
+        </button>
+            <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
+                role="menu" aria-labelledby="button-animated">
+                <li role = "menuitem" *ngFor = "let conversationModel of _messageProvider.availableConversations | async">
+                    <a class = "dropdown-item" href="#" (click) = "this._searchControl.onConversationSelect(conversationModel)">
+                        {{ conversationModel.displayName }}
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="btn-group dropdown" #dropdown="bs-dropdown" dropdown [autoClose] = "false">
+            <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+                    aria-controls="dropdown-animated">
+                Filter search by
+            </button>
+            <ul id="dropdown-animated"  *dropdownMenu class="dropdown-menu filter-dropdown"
+                role="menu" aria-labelledby="button-animated">
+                <li role = "menuitem">
+                    <div class = "filter">
+                        <input 
+                            [(ngModel)] = "this._searchControl.fromWordFilterOption"
+                            class = "filter-picker" 
+                            (keyup.enter) = "dropdown.hide()"
+                            placeholder = "1"/>
+                        <p>to</p>
+                        <input 
+                            [(ngModel)] = "this._searchControl.toWordFilterOption"
+                            class = "filter-picker" 
+                            (keyup.enter) = "dropdown.hide()"
+                            placeholder = "{{ this._searchControl.getToFilterWordPlaceholder() }}"/>
+                        <p>words</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <filter-participants 
+            class = "dropdown"
+            [participants]="this._searchControl.participants"
+            (onSelectParticipants)="this._searchControl.changeUsedParticipants($event)">
+        </filter-participants>
+        <chart-type-filter 
+            class = "dropdown"
+            [chartType] = "this._searchControl.chartType"
+            (chartTypeSelect) = "this._searchControl.chartType = $event">
+        </chart-type-filter>
+        <group-filter  
+            class = "dropdown"
+            (chartGroupSelected) = "this._searchControl.chartGroupModel = $event">
+        </group-filter>
+        <total-filter class = "dropdown" (totalChange) = "this._searchControl.isTotal = $event"></total-filter>
 </div>
-<div class="btn-group dropdown" #dropdown="bs-dropdown" dropdown [autoClose] = "false">
-    <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
-            aria-controls="dropdown-animated">
-        Filter search by number of words
-    </button>
-    <ul id="dropdown-animated"  *dropdownMenu class="dropdown-menu filter-dropdown"
-        role="menu" aria-labelledby="button-animated">
-        <li role = "menuitem">
-            <div class = "filter">
-                <input 
-                    [(ngModel)] = "this._searchControl.fromWordFilterOption"
-                    class = "filter-picker" 
-                    (keyup.enter) = "dropdown.hide()"
-                    placeholder = "1"/>
-                <p>to</p>
-                <input 
-                    [(ngModel)] = "this._searchControl.toWordFilterOption"
-                    class = "filter-picker" 
-                    (keyup.enter) = "dropdown.hide()"
-                    placeholder = "{{ this._searchControl.getToFilterWordPlaceholder() }}"/>
-                <p>words</p>
-            </div>
-        </li>
-    </ul>
-</div>
-<filter-participants 
-    [participants] = "this._searchControl.participants"
-    (onSelectParticipants) = "this._searchControl.changeUsedParticipants($event)"></filter-participants>
 <input type="text" 
        class="form-control" 
        placeholder="Search for words or phrases"
@@ -52,5 +70,9 @@
 <chart-component
     class = "chart-component"
     [rawDataset] = "this._searchControl.rawDataset"
-    [participants] =  "this._searchControl.usedParticipants">
+    [participants] =  "this._searchControl.usedParticipants"
+    [chartType] = "this._searchControl.chartType"
+    [separateElements] = "this._searchControl.chartGroupModel.isSeparated"
+    [stackElements] = "this._searchControl.chartGroupModel.isStacked"
+    [useTotal] = "this._searchControl.isTotal">
 </chart-component>

@@ -36,6 +36,7 @@ export class FilterParticipantsComponent {
     }
 
     private _onModalHide() {
+        console.log(this._participantsBuffer);
         this.onSelectParticipants.emit(this._participantsBuffer);
     }
 

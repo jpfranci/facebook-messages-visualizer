@@ -18,9 +18,21 @@ import { ChartComponent } from './chart-component';
 import { DatePickerComponent } from './date-picker-component';
 import { ModalModule } from 'ngx-bootstrap';
 import { FilterParticipantsComponent } from './filter-participants-component';
+import { ChartTypeFilterComponent } from './chart-type-filter-component';
+import { GroupFilterComponent } from './group-filter-component';
+import { TotalFilterComponent } from './total-filter-component';
 
 @NgModule({
-  declarations: [HomeComponent, SearchComponent, ChartComponent, DatePickerComponent, FilterParticipantsComponent],
+  declarations: [
+    HomeComponent, 
+    SearchComponent, 
+    ChartComponent, 
+    DatePickerComponent, 
+    FilterParticipantsComponent,
+    ChartTypeFilterComponent,
+    GroupFilterComponent,
+    TotalFilterComponent
+  ],
   imports: [
     CommonModule, 
     SharedModule, 

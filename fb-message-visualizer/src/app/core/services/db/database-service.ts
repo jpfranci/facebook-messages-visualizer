@@ -72,7 +72,8 @@ export class DatabaseService {
         if(!doesExist) {
             await this.db.schema.createTableIfNotExists(DatabaseService.PAST_SEARCHES_TABLE, (table) => {
                 table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING),
-                table.json('search'),
+                table.json('chartOptions'),
+                table.json('dataset'),
                 table.primary('displayName')
             });
         }

@@ -16,6 +16,10 @@ export class ChartComponent implements OnChanges {
   @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective;
   @Input() rawDataset: ConversationModel | WordModel; 
   @Input() participants: Array<string>;
+  @Input() chartType: string;
+  @Input() separateElements: boolean;
+  @Input() stackElements: boolean;
+  @Input() useTotal: boolean;
   private _chartControl: ChartControl;
   private _startDate: NgbDateStruct;
   private _endDate: NgbDateStruct;
@@ -25,6 +29,10 @@ export class ChartComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    this._chartControl.chartType = this.chartType;
+    if (changes.stackElements) {
+      this._chartControl.setStacked(this.stackElements);
+    }
     if (this.rawDataset) {
       const startDate = new Date(this.rawDataset.startDate);
       const endDate = new Date(this.rawDataset.endDate);
@@ -39,9 +47,9 @@ export class ChartComponent implements OnChanges {
         day: endDate.getDate()
       };
       if (this.participants) {
-        this._chartControl.showDefaultGraph(this.rawDataset, this.participants);
+        this._chartControl.showTimeGraph(this.rawDataset, this.separateElements, this.useTotal, this.participants);
       } else {
-        this._chartControl.showDefaultGraph(this.rawDataset);
+        this._chartControl.showTimeGraph(this.rawDataset, this.separateElements, this.useTotal);
       }
     }
   }

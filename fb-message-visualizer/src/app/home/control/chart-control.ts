@@ -4,6 +4,7 @@ import { ConversationModel } from "../../core/models/conversation-model";
 import { SingleDataSet } from "ng2-charts";
 import { WordModel, ConversationModelConversions, WordModelConversions } from "../../core/models";
 import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
+import { ThrowStmt } from "@angular/compiler";
 
 export class ChartControl {
     private _chartOptions: ChartOptions; 
@@ -15,7 +16,9 @@ export class ChartControl {
     private _participants: Array<string>
     private _startDate: string;
     private _endDate: string;
+    private _isSeparated: boolean;
     public _model: ConversationModel | WordModel;
+    private _isTotal: boolean;
 
     constructor(private _messageFormatterService: MessageFormatterService) {
         this.dataset = [{data: [], label: ""}];
@@ -40,10 +43,12 @@ export class ChartControl {
                         unit: 'month'
                     },
                     ticks: {
-                        maxTicksLimit: 15
+                        maxTicksLimit: 10
                     }
                 }],
                 yAxes: [{
+                    display: true,
+                    position: 'left',
                     ticks: {
                         beginAtZero: true
                     }
@@ -52,12 +57,15 @@ export class ChartControl {
         }
     }
     
-  public showDefaultGraph(
+  public showTimeGraph(
     model: ConversationModel | WordModel, 
+    isSeparated: boolean,
+    isTotal: boolean, 
     participants?: Array<string>, 
     startDate?: string, 
     endDate?: string): void {
         let participantsToUse: string[] = participants ? participants : this._getAllParticipants(model);
+        this._isSeparated = isSeparated;
         if (this._model !== model) {
             this._model = model;
             participantsToUse = this._getAllParticipants(model);
@@ -67,14 +75,28 @@ export class ChartControl {
         this._participants = participantsToUse;
         this._startDate = startDateToUse;
         this._endDate = endDateToUse;
+        this._isTotal = isTotal;
+        let dataSetAndUnit;
         
-        let dataSetAndUnit = this._messageFormatterService.getTotalDates(
-            JSON.parse(model.dates),
-            startDateToUse,
-            endDateToUse,
-            this.chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
-            participantsToUse
-        )
+        if (isSeparated) {
+            dataSetAndUnit = this._messageFormatterService.getSeparatedDates(
+                JSON.parse(model.dates),
+                startDateToUse,
+                endDateToUse,
+                this._isTotal,
+                this.chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
+                participantsToUse
+            )
+        } else {
+            dataSetAndUnit = this._messageFormatterService.getTotalDates(
+                JSON.parse(model.dates),
+                startDateToUse,
+                endDateToUse,
+                this._isTotal,
+                this.chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
+                participantsToUse
+            )
+        }
         this.dataset = dataSetAndUnit.dataset;
         if (model.hasOwnProperty("word")) {
             this.chartOptions.title.text = `Message Count of ${this.capitalizeFirstLetter((<WordModel>model).word)} by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
@@ -85,7 +107,7 @@ export class ChartControl {
             dataSetAndUnit.unit = 'month';
         }
         this.chartOptions.scales.xAxes[0].time.unit = <TimeUnit> dataSetAndUnit.unit;
-        this.chartOptions = Object.assign({}, this.chartOptions);
+        this._refreshOptions();
   }
 
   private _getAllParticipants(model: ConversationModel | WordModel): Array<string> {
@@ -97,12 +119,23 @@ export class ChartControl {
   }
 
   public changeStartDate(startDate: NgbDateStruct) {
-      this.showDefaultGraph(this._model, this._participants, this.dateStructToDate(startDate),  this._endDate);
+      this.showTimeGraph(this._model, this._isSeparated, this._isTotal, this._participants, this.dateStructToDate(startDate),  this._endDate);
   }
 
-  public changeEndDate(endDate: NgbDateStruct) {
-    this.showDefaultGraph(this._model, this._participants, this._startDate, this.dateStructToDate(endDate));
+  public setStacked(stacked: boolean) {
+      if (this.chartOptions) {
+        this.chartOptions.scales.xAxes[0].stacked = stacked;
+        this.chartOptions.scales.yAxes[0].stacked = stacked;
+        this._refreshOptions();
+      }
+  }
 
+  private _refreshOptions() {
+    this.chartOptions = Object.assign({}, this.chartOptions);
+}
+
+  public changeEndDate(endDate: NgbDateStruct) {
+    this.showTimeGraph(this._model, this._isSeparated, this._isTotal, this._participants, this._startDate, this.dateStructToDate(endDate));
   }
 
   public dateStructToDate(date: NgbDateStruct): string {
