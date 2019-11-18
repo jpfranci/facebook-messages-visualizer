@@ -1,9 +1,7 @@
 import { Injectable } from "@angular/core";
-import { from, BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { WordModel } from '../../models/word-model';
 import { ConversationModel } from '../../models/conversation-model';
-import { MessageModel } from "../../models/message-model";
-import { MessageProvider } from "../fb-message-loader/message-provider";
 @Injectable({
     providedIn: 'root'
 }) 

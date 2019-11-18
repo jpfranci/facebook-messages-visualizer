@@ -1,10 +1,8 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewChild } from "@angular/core";
-import { ChartOptions, ChartType } from "chart.js";
-import { SingleDataSet, BaseChartDirective } from "ng2-charts";
+import { Component, ViewChild } from "@angular/core";
+import { BaseChartDirective } from "ng2-charts";
 import { MessageFormatterService } from "../core/services/fb-message-loader/message-formatter-service";
-import { ConversationModel, WordModel } from "../core/models";
 import { ChartControl } from "./control/chart-control";
-import { NgbDateStruct, NgbCalendar } from "@ng-bootstrap/ng-bootstrap";
+import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
 import { MessageProvider, GraphMessageProvider } from "../core/services";
 
 @Component({

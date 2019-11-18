@@ -1,13 +1,8 @@
-import {NgbTypeahead, NgbTypeaheadSelectItemEvent} from '@ng-bootstrap/ng-bootstrap';
+import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
-import { WordModel, ConversationModel, ConversationModelConversions, ChartGroupModel } from '../../core/models';
+import { WordModel, ConversationModel } from '../../core/models';
 import { debounceTime, distinctUntilChanged, tap, filter, switchMap, map, take } from 'rxjs/operators';
 import { MessageLoaderService, MessageProvider, GraphMessageProvider } from '../../core/services';
-import { MessageFormatterService } from '../../core/services/fb-message-loader/message-formatter-service';
-import { SingleDataSet } from 'ng2-charts';
-import { ChartOptions } from 'chart.js';
-import { ChartTypeFilterComponent } from '../chart-type-filter-component';
-import { GroupFilterComponent } from '../group-filter-component';
 
 export class SearchControl {
     public fromWordFilterOption: string;
