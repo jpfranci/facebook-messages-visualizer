@@ -53,27 +53,16 @@
         </div>
         <filter-participants class = "dropdown"></filter-participants>
         <chart-type-filter class = "dropdown"></chart-type-filter>
-        <group-filter  
-            class = "dropdown"
-            (chartGroupSelected) = "this._searchControl.chartGroupModel = $event">
-        </group-filter>
-        <total-filter class = "dropdown" (totalChange) = "this._searchControl.isTotal = $event"></total-filter>
+        <group-filter class = "dropdown"></group-filter>
+        <total-filter class = "dropdown"></total-filter>
 </div>
 <input type="text" 
        class="form-control" 
        placeholder="Search for words or phrases"
        [(ngModel)]="this._searchControl.selectedWord" 
-       (selectItem)="this._searchControl.onSelectWord($event)"
+       (selectItem)="this._graphMessageProvider.changeWord($event.item)"
        [ngbTypeahead]="this._searchControl.onType"
        [inputFormatter]="_inputFormatter"
        [resultFormatter]="_wordModelFormatter"
        #search>
-<chart-component
-    class = "chart-component"
-    [rawDataset] = "this._searchControl.rawDataset"
-    [participants] =  "this._searchControl.usedParticipants"
-    [chartType] = "this._searchControl.chartType"
-    [separateElements] = "this._searchControl.chartGroupModel.isSeparated"
-    [stackElements] = "this._searchControl.chartGroupModel.isStacked"
-    [useTotal] = "this._searchControl.isTotal">
-</chart-component>
+<chart-component class = "chart-component"></chart-component>

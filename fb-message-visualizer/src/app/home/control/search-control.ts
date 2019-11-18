@@ -14,15 +14,6 @@ export class SearchControl {
     public toWordFilterOption: string;
     public selectedConversationInput: string;
     public selectedWord: string;
-    
-    public rawDataset: ConversationModel | WordModel;
-    public dataset: Array<{data: SingleDataSet, label: string}>;
-    public chartOptions: ChartOptions;
-    public chartType: string;
-    public participants: Array<string>; 
-    public usedParticipants: Array<string>;
-    public chartGroupModel: ChartGroupModel;
-    public isTotal: boolean;
 
     private _wordModels: Observable<Array<WordModel>>;
     private _selectedConversation: ConversationModel;
@@ -30,34 +21,23 @@ export class SearchControl {
     constructor(private _ngbTypeahead: NgbTypeahead,
                 private _messageLoaderService: MessageLoaderService,
                 private _messageProvider: MessageProvider,
-                private _messageFormatterService: MessageFormatterService) {
+                private _graphMessageProvider: GraphMessageProvider) {
       this.selectedConversationInput = "You must pick a conversation to analyze before you begin";
-      this.participants = [];
-      this.chartGroupModel = GraphMessageProvider.NOT_SEPARATED_NOR_STACKED;
-      this.chartType = 'line';
-      this.isTotal = true;
-      this._initConversationModel();
       
       this._messageProvider.inMemorySubject.subscribe((wordModels: Array<WordModel>) => {
         if (wordModels.length > 0 && this.selectedConversationInput === wordModels[0].displayName) {
           this._wordModels = this._messageProvider.inMemorySubject;
         }
       })
+      
+      this._graphMessageProvider.currentConversation.subscribe((conversationModel: ConversationModel) => {
+        this._wordModels = this._messageProvider.getWords(conversationModel.displayName, "");
+        this._selectedConversation = conversationModel;
+      })
     }
 
     public set ngbTypeahead(ngbTypeahead: NgbTypeahead) {
       this._ngbTypeahead = ngbTypeahead;
-    }
-   
-    private _initConversationModel() {
-      this._messageProvider.availableConversations.pipe(
-        filter((availableConversations: ConversationModel[]) => availableConversations.length > 0),
-        take(1)
-      )
-      .subscribe((conversationModels: ConversationModel[]) => {
-        const conversationModel = conversationModels[0];
-        this.onConversationSelect(conversationModel);
-      })
     }
 
     public getToFilterWordPlaceholder(): string {
@@ -66,14 +46,6 @@ export class SearchControl {
       } else {
         return MessageLoaderService.DEFAULTNGRAMS.toString();
       }
-    }
-
-    public changeUsedParticipants(newParticipantsToUse: Array<string>): void {
-      this.usedParticipants = newParticipantsToUse.slice();
-    }
-    
-    public onSelectWord(selectedItem: NgbTypeaheadSelectItemEvent): void {
-      this.rawDataset = selectedItem.item;
     }
 
     onType = (searchTerm: Observable<string>): Observable<Array<WordModel>> => {
@@ -108,14 +80,5 @@ export class SearchControl {
         })
       ))
     );
-  }
-
-  public onConversationSelect(conversationModel: ConversationModel): void {
-    this.selectedConversationInput = conversationModel.displayName;
-    this.usedParticipants = ConversationModelConversions.toParticipantsArray(conversationModel);
-    this.participants = ConversationModelConversions.toParticipantsArray(conversationModel);
-    this._selectedConversation = conversationModel;
-    this.rawDataset = conversationModel;
-    this._wordModels = this._messageProvider.getWords(conversationModel.displayName, "");
   }
 }

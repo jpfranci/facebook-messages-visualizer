@@ -26,8 +26,8 @@ export class SearchComponent {
       this._searchControl = new SearchControl(
         this._ngbTypeahead, 
         _messageLoaderService, 
-        _messageProvider, 
-        _messageFormatterService);
+        _messageProvider,
+        _graphMessageProvider);
   }
 
   private openModal(template) {
