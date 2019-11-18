@@ -14,7 +14,7 @@ export class HomeComponent {
     this._alerts = [];
   }
 
-  public onClick() {
+  public loadFiles() {
     this._messageLoaderService.loadFiles((err) => {
       this._alerts.push({
         type: 'danger',

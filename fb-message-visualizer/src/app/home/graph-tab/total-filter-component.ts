@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter } from "@angular/core";
-import { GraphMessageProvider } from "../core/services";
+import { GraphMessageProvider } from "../../core/services";
 import { Observable } from "rxjs";
 import { map, take } from "rxjs/operators";
 

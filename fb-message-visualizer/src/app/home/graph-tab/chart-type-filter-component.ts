@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, Input } from "@angular/core";
-import { GraphMessageProvider } from "../core/services";
+import { GraphMessageProvider } from "../../core/services";
 import { ChartType } from "chart.js";
 
 @Component({

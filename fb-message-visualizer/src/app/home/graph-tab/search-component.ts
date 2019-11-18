@@ -1,9 +1,9 @@
 import { Component, ViewChild } from "@angular/core";
-import { MessageProvider, MessageLoaderService, GraphMessageProvider } from "../core/services";
-import { WordModel } from "../core/models";
+import { MessageProvider, MessageLoaderService, GraphMessageProvider } from "../../core/services";
+import { WordModel } from "../../core/models";
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
-import { MessageFormatterService } from "../core/services/fb-message-loader/message-formatter-service";
-import { SearchControl } from "./control/search-control";
+import { MessageFormatterService } from "../../core/services/fb-message-loader/message-formatter-service";
+import { SearchControl } from "../control/search-control";
 import { BsModalService, BsModalRef, ModalDirective } from 'ngx-bootstrap/modal';
 
 @Component({

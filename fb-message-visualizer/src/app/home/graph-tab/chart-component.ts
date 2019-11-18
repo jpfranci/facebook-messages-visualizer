@@ -1,9 +1,9 @@
 import { Component, ViewChild } from "@angular/core";
 import { BaseChartDirective } from "ng2-charts";
-import { MessageFormatterService } from "../core/services/fb-message-loader/message-formatter-service";
-import { ChartControl } from "./control/chart-control";
+import { MessageFormatterService } from "../../core/services/fb-message-loader/message-formatter-service";
+import { ChartControl } from "../control/chart-control";
 import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
-import { MessageProvider, GraphMessageProvider } from "../core/services";
+import { MessageProvider, GraphMessageProvider } from "../../core/services";
 
 @Component({
     selector: 'chart-component',

@@ -1,6 +1,6 @@
 import { Component, Output, EventEmitter, Input } from "@angular/core";
-import { ChartGroupModel } from "../core/models";
-import { GraphMessageProvider } from "../core/services";
+import { ChartGroupModel } from "../../core/models";
+import { GraphMessageProvider } from "../../core/services";
 
 @Component({
     selector: 'group-filter',

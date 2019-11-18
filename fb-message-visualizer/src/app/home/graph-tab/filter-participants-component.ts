@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, SimpleChanges, ViewChild } from "@angular/core";
 import { ModalDirective } from "ngx-bootstrap";
-import { GraphMessageProvider } from "../core/services";
+import { GraphMessageProvider } from "../../core/services";
 
 @Component({
     selector: 'filter-participants',
