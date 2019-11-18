@@ -1,5 +1,5 @@
 import { Component, ViewChild } from "@angular/core";
-import { MessageProvider, MessageLoaderService } from "../core/services";
+import { MessageProvider, MessageLoaderService, GraphMessageProvider } from "../core/services";
 import { WordModel } from "../core/models";
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import { MessageFormatterService } from "../core/services/fb-message-loader/message-formatter-service";
@@ -20,6 +20,7 @@ export class SearchComponent {
   constructor(
     private _messageProvider: MessageProvider, 
     private _messageLoaderService: MessageLoaderService,
+    private _graphMessageProvider: GraphMessageProvider,
     private _messageFormatterService: MessageFormatterService,
     private _modalService: BsModalService) {
       this._searchControl = new SearchControl(

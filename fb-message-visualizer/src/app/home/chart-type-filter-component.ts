@@ -1,27 +1,24 @@
 import { Component, Output, EventEmitter, Input } from "@angular/core";
+import { GraphMessageProvider } from "../core/services";
+import { ChartType } from "chart.js";
 
 @Component({
     selector: 'chart-type-filter',
     templateUrl: './chart-type-filter-component.html'
   })
 export class ChartTypeFilterComponent {
-    @Input() chartType: string;
-    @Output() chartTypeSelect: EventEmitter<string> = new EventEmitter();
-    public static barType = 'bar';
-    public static lineType = 'line';
     private _conversionMap: Map<string, string>;
     private _types;
     private _selectedType;
 
-    constructor() {
+    constructor(private _graphMessageProvider: GraphMessageProvider) {
         this._conversionMap = new Map<string, string>();
-        this._conversionMap.set(ChartTypeFilterComponent.lineType, "Line Chart");
-        this._conversionMap.set(ChartTypeFilterComponent.barType, "Bar Chart");
+        this._conversionMap.set('line' , "Line Chart");
+        this._conversionMap.set('bar', "Bar Chart");
         this._types = Array.from(this._conversionMap.keys());
     }
 
     onChartTypeSelect(type: string): void {
-        this.chartType = type;
-        this.chartTypeSelect.emit(type);
+        this._graphMessageProvider.chartType = <ChartType> type;
     }
 }

@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, SimpleChanges, ViewChild } from "@angular/core";
 import { ModalDirective } from "ngx-bootstrap";
+import { GraphMessageProvider } from "../core/services";
 
 @Component({
     selector: 'filter-participants',
@@ -8,19 +9,24 @@ import { ModalDirective } from "ngx-bootstrap";
   })
 export class FilterParticipantsComponent {
     @ViewChild(ModalDirective, { static: false }) modal: ModalDirective;
-    @Input() participants: Array<string>;
-    @Output() onSelectParticipants: EventEmitter<Array<string>> = new EventEmitter();
     private _participantsBuffer: Array<string>;
 
+    constructor(private _graphMessageProvider: GraphMessageProvider) {
+        this._selectAllParticipants();
+    }
+    
+    private _selectAllParticipants(): void {
+        this._graphMessageProvider.participantsObservable.subscribe((participants: Array<string>) => {
+            this._participantsBuffer = participants.slice();
+        })
+    }
+
     showModal() {
-        if (this._participantsBuffer === undefined && this.participants) {
-            this._participantsBuffer = this.participants.slice();
-        }
         this.modal.show();
     }
 
     private _onSelectAll() {
-        this._participantsBuffer = this.participants.slice();
+        this._selectAllParticipants();
     }
 
     private _onUnselectAll() {
@@ -36,13 +42,6 @@ export class FilterParticipantsComponent {
     }
 
     private _onModalHide() {
-        console.log(this._participantsBuffer);
-        this.onSelectParticipants.emit(this._participantsBuffer);
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes.participants) {
-            this._participantsBuffer = changes.participants.currentValue.slice();
-        }
+        this._graphMessageProvider.setSelectedParticipants(this._participantsBuffer);
     }
 }

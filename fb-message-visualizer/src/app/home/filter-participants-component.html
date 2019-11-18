@@ -15,7 +15,8 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class = "participant-select-container" *ngFor = "let participant of participants">
+                <div class = "participant-select-container" 
+                    *ngFor = "let participant of this._graphMessageProvider.participantsObservable | async">
                     <input
                         type = "checkbox"
                         [checked] = "_participantsBuffer.includes(participant)"

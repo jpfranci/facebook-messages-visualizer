@@ -1,13 +1,23 @@
-<div class="btn-group dropdown" dropdown  [autoClose] = "true">
-    <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+<div 
+    *ngIf="this._graphMessageProvider.chartTypeObservable | async as chartType" 
+    class="btn-group dropdown" 
+    dropdown  
+    [autoClose] = "true">
+        <button 
+            id="button-animated" 
+            dropdownToggle 
+            type="button" 
+            class="btn btn-primary dropdown-toggle"
             aria-controls="dropdown-animated">
-        {{ _conversionMap.get(chartType) }}
-    </button>
-    <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
-        role="menu" aria-labelledby="button-animated">
+            {{ _conversionMap.get(chartType) }}
+        </button>
+    <ul id="dropdown-animated" 
+        *dropdownMenu class="dropdown-menu"
+        role="menu" 
+        aria-labelledby="button-animated">
         <li role = "menuitem" *ngFor = "let type of _types">
             <a class = "dropdown-item" href="#" (click) = "onChartTypeSelect(type)">
-                {{ _conversionMap.get(type) }}
+            {{ _conversionMap.get(type) }}
             </a>
         </li>
     </ul>

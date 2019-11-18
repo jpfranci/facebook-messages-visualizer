@@ -2,7 +2,7 @@ import {NgbTypeahead, NgbTypeaheadSelectItemEvent} from '@ng-bootstrap/ng-bootst
 import { Observable } from 'rxjs';
 import { WordModel, ConversationModel, ConversationModelConversions, ChartGroupModel } from '../../core/models';
 import { debounceTime, distinctUntilChanged, tap, filter, switchMap, map, take } from 'rxjs/operators';
-import { MessageLoaderService, MessageProvider } from '../../core/services';
+import { MessageLoaderService, MessageProvider, GraphMessageProvider } from '../../core/services';
 import { MessageFormatterService } from '../../core/services/fb-message-loader/message-formatter-service';
 import { SingleDataSet } from 'ng2-charts';
 import { ChartOptions } from 'chart.js';
@@ -33,8 +33,8 @@ export class SearchControl {
                 private _messageFormatterService: MessageFormatterService) {
       this.selectedConversationInput = "You must pick a conversation to analyze before you begin";
       this.participants = [];
-      this.chartGroupModel = GroupFilterComponent.NOT_SEPARATED_NOR_STACKED;
-      this.chartType = ChartTypeFilterComponent.lineType;
+      this.chartGroupModel = GraphMessageProvider.NOT_SEPARATED_NOR_STACKED;
+      this.chartType = 'line';
       this.isTotal = true;
       this._initConversationModel();
       

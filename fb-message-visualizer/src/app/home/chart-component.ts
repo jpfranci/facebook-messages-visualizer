@@ -5,7 +5,7 @@ import { MessageFormatterService } from "../core/services/fb-message-loader/mess
 import { ConversationModel, WordModel } from "../core/models";
 import { ChartControl } from "./control/chart-control";
 import { NgbDateStruct, NgbCalendar } from "@ng-bootstrap/ng-bootstrap";
-import { MessageProvider } from "../core/services";
+import { MessageProvider, GraphMessageProvider } from "../core/services";
 
 @Component({
     selector: 'chart-component',
@@ -24,7 +24,9 @@ export class ChartComponent implements OnChanges {
   private _startDate: NgbDateStruct;
   private _endDate: NgbDateStruct;
 
-  constructor(private _messageFormatterService: MessageFormatterService, private _messageProvider: MessageProvider) {
+  constructor(private _messageFormatterService: MessageFormatterService, 
+              private _messageProvider: MessageProvider,
+              private _graphMessageProvider: GraphMessageProvider) {
     this._chartControl = new ChartControl(_messageFormatterService);
   }
 
