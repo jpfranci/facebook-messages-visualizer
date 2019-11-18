@@ -19,7 +19,7 @@ export class DatabaseService {
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: './test10.db',
+              filename: './testhehe.db',
             },
           });
         

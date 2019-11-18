@@ -200,7 +200,10 @@ export class MessageLoaderService {
     private _cleanString(str: string): string {
         // fb messages are encoded with latin1, so have to encode strings as latin1 
         // before reading as utf-8
-        return iconv.decode(iconv.encode(str.toLowerCase(), 'latin1'), 'utf-8');
+        const decodedString: string = iconv.decode(iconv.encode(str.toLowerCase(), 'latin1'), 'utf-8');
+       // const withoutPunctuation: string = decodedString.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+       // const withoutPunctuationAndNoExtraSpaces: string = withoutPunctuation.replace(/\s{2,}/g," ");
+        return decodedString;
     }
 
     private _generateNGrams(tokens: Array<string>, n: number): Array<Array<string>> {

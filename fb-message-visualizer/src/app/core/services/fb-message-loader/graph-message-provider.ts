@@ -23,6 +23,9 @@ export class GraphMessageProvider {
     private _useTotalObservable: BehaviorSubject<boolean>;
     private _groupModelObservable: BehaviorSubject<ChartGroupModel>;
 
+    private _startDate: BehaviorSubject<Date>;
+    private _endDate: BehaviorSubject<Date>;
+
     public static NOT_SEPARATED_NOR_STACKED: ChartGroupModel = {
         isSeparated: false,
         isStacked: false
@@ -90,6 +93,8 @@ export class GraphMessageProvider {
         this._chartTypeObservable = new BehaviorSubject<ChartType>('line');
         this._groupModelObservable = new BehaviorSubject<ChartGroupModel>(GraphMessageProvider.NOT_SEPARATED_NOR_STACKED);
         this._useTotalObservable = new BehaviorSubject<boolean>(true);
+        this._startDate = new BehaviorSubject<Date>(new Date());
+        this._endDate = new BehaviorSubject<Date>(new Date());
     }
 
     public showTimeGraph(startDate?: string, endDate?: string): void {
@@ -121,9 +126,9 @@ export class GraphMessageProvider {
         }
         this._chartDataset = dataSetAndUnit.dataset;
         if (model.hasOwnProperty("word")) {
-            chartOptions.title.text = `Message Count of ${this.capitalizeFirstLetter((<WordModel>model).word)} by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
+            chartOptions.title.text = `Message Count of ${this.capitalizeFirstLetter((<WordModel>model).word)} by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for chat with ${model.displayName}`;
         } else {
-            chartOptions.title.text = `Message Count by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
+            chartOptions.title.text = `Message Count by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for chat with ${model.displayName}`;
         }
         if (dataSetAndUnit.unit === 'quarter') {
             dataSetAndUnit.unit = 'month';
@@ -134,6 +139,14 @@ export class GraphMessageProvider {
 
     private capitalizeFirstLetter(str: string): string {
         return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    public get startDate(): Observable<Date> {
+        return this._startDate;
+    }
+
+    public get endDate(): Observable<Date> {
+        return this._endDate;
     }
 
     public get chartDataset(): Array<{data: SingleDataSet, label: string}> {
@@ -213,6 +226,8 @@ export class GraphMessageProvider {
 
     public changeConversationModel(conversationModel: ConversationModel): void {
         this._currentConversationObservable.next(conversationModel);
+        this._startDate.next(new Date(conversationModel.startDate));
+        this._endDate.next(new Date(conversationModel.endDate));
         this._selectedToDisplayObservable.next(conversationModel);
         this._selectedParticipantsObservable.next(ConversationModelConversions.toParticipantsArray(conversationModel));
         this._messageProvider.getWords(conversationModel.displayName, "").subscribe(
@@ -224,6 +239,8 @@ export class GraphMessageProvider {
 
     public changeWord(wordModel: WordModel): void {
         this._selectedToDisplayObservable.next(wordModel);
+        this._startDate.next(new Date(wordModel.startDate));
+        this._endDate.next(new Date(wordModel.endDate));
         this.showTimeGraph();
     }
 }
