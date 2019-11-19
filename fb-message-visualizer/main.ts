@@ -10,6 +10,7 @@ function createWindow() {
 
   const electronScreen = screen;
   const size = electronScreen.getPrimaryDisplay().workAreaSize;
+  let isFirstLoad = true;
 
   // Create the browser window.
   win = new BrowserWindow({
@@ -20,6 +21,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
     },
+    show: false
   });
 
   if (serve) {
@@ -47,6 +49,13 @@ function createWindow() {
     win = null;
   });
 
+  win.once('ready-to-show', () => {
+    win.show();
+    if (isFirstLoad) {
+      isFirstLoad = false;
+      win.reload();
+    }
+  });
 }
 
 try {

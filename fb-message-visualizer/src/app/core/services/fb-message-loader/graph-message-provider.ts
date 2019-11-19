@@ -126,9 +126,9 @@ export class GraphMessageProvider {
         }
         this._chartDataset = dataSetAndUnit.dataset;
         if (model.hasOwnProperty("word")) {
-            chartOptions.title.text = `Message Count of ${this.capitalizeFirstLetter((<WordModel>model).word)} by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for chat with ${model.displayName}`;
+            chartOptions.title.text = `Message Count of ${this.capitalizeFirstLetter((<WordModel>model).word)} by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
         } else {
-            chartOptions.title.text = `Message Count by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for chat with ${model.displayName}`;
+            chartOptions.title.text = `Message Count by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
         }
         if (dataSetAndUnit.unit === 'quarter') {
             dataSetAndUnit.unit = 'month';

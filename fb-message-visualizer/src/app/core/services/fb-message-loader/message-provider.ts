@@ -12,18 +12,20 @@ export class MessageProvider {
     private _inMemorySubject: BehaviorSubject<Array<WordModel>>;
     private _hasDataSubject: BehaviorSubject<boolean>;
     private _availableConversations: BehaviorSubject<Array<ConversationModel>>;
+    private _isAppReadyToUse: BehaviorSubject<boolean>;
 
     constructor(private _databaseService: DatabaseService) {
         this._inMemorySubject = new BehaviorSubject<Array<WordModel>>([]);
         this._hasDataSubject = new BehaviorSubject<boolean>(false);
+        this._isAppReadyToUse = new BehaviorSubject<boolean>(false);
         this._availableConversations = new BehaviorSubject<Array<ConversationModel>>([]);
         this._databaseService.createdTablesObservable.pipe(
-            tap((areTablesCreated) => console.log(areTablesCreated)),
             filter((areTablesCreated: boolean) => areTablesCreated === true),
             switchMap(() => from(this._databaseService.getAllFromTable(DatabaseService.CONVERSATION_TABLE))),
             take(1)
         ).subscribe(
             (conversationModels: Array<ConversationModel>) => {
+                this._isAppReadyToUse.next(true);
                 if (conversationModels.length > 0) {
                     this._hasDataSubject.next(true);
                     this._availableConversations.next(conversationModels);
@@ -84,5 +86,9 @@ export class MessageProvider {
 
     public get hasDataSubject(): BehaviorSubject<boolean> {
         return this._hasDataSubject;
+    }
+
+    public get isAppReadyToUse(): Observable<boolean> {
+        return this._isAppReadyToUse;
     }
 }

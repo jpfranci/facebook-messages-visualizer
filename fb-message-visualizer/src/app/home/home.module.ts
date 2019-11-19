@@ -21,6 +21,7 @@ import { FilterParticipantsComponent } from './graph-tab/filter-participants-com
 import { ChartTypeFilterComponent } from './graph-tab/chart-type-filter-component';
 import { GroupFilterComponent } from './graph-tab/group-filter-component';
 import { TotalFilterComponent } from './graph-tab/total-filter-component';
+import { SummaryTabComponent } from './summary-tab/summary-tab-component';
 
 @NgModule({
   declarations: [
@@ -31,7 +32,8 @@ import { TotalFilterComponent } from './graph-tab/total-filter-component';
     FilterParticipantsComponent,
     ChartTypeFilterComponent,
     GroupFilterComponent,
-    TotalFilterComponent
+    TotalFilterComponent,
+    SummaryTabComponent
   ],
   imports: [
     CommonModule, 
