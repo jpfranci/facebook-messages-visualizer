@@ -6,8 +6,14 @@ export interface ConversationModel {
     processedWords: number,
     storedWords: number,
     totalMessages: number,
-    // json object of participant: { date: occurences }*
+
+    // json objects of participant: { date: occurences }[]
     dates: string,
+    photos: string,
+    stickers: string,
+    videos: string,
+    gifs: string,
+
     startDate: string,
     endDate: string
 }

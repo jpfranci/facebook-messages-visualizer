@@ -12,6 +12,11 @@ export interface FacebookMessagesModel {
 export interface MessageModel {
     sender_name: string,
     timestamp_ms: number,
-    content: string,
+    content?: string,
+    reactions?: Array<{reaction: string, actor: string}>,
+    videos?: Array<{}>,
+    photos?: Array<{}>,
+    gifs?: Array<{}>,
+    sticker?: {},
     type: string 
 }

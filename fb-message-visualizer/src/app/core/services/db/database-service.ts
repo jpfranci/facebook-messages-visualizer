@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from 'rxjs';
 import { WordModel } from '../../models/word-model';
 import { ConversationModel } from '../../models/conversation-model';
+import { ReactionModel } from "../../models";
 @Injectable({
     providedIn: 'root'
 }) 
@@ -9,6 +10,7 @@ import { ConversationModel } from '../../models/conversation-model';
 export class DatabaseService {
     public static CONVERSATION_TABLE: string = "Conversation";
     public static WORDS_TABLE: string = "Words";
+    public static REACTIONS_TABLE: string = "Reactions";
     public static PAST_SEARCHES_TABLE: string = "PastSearches";
     private static MAX_CHARACTERS_STRING: number = 1000;
     private _createdTablesObservable: BehaviorSubject<boolean>;
@@ -17,7 +19,7 @@ export class DatabaseService {
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: './testhehe.db',
+              filename: './test123.db',
             },
           });
         
@@ -46,6 +48,10 @@ export class DatabaseService {
                 table.integer('storedWords'),
                 table.integer('totalMessages'),
                 table.json('dates'),
+                table.json('photos'),
+                table.json('stickers'),
+                table.json('videos'),
+                table.json('gifs')
                 table.string('startDate'),
                 table.string('endDate')
             });
@@ -65,6 +71,21 @@ export class DatabaseService {
                 table.primary(['word', 'displayName'])
             });
         }
+
+        doesExist = await this.db.schema.hasTable(DatabaseService.REACTIONS_TABLE);
+        if (!doesExist) {
+            await this.db.schema.createTableIfNotExists(DatabaseService.REACTIONS_TABLE, (table) => {
+                table.string('reaction'),
+                table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING),
+                // Frequencies for all participants
+                table.json('frequencies'),
+                // Json representing all dates word is used
+                table.json('dates'),
+                table.string('startDate'),
+                table.string('endDate')
+                table.primary(['reaction', 'displayName'])
+            });
+        }
         
         doesExist = await this.db.schema.hasTable(DatabaseService.PAST_SEARCHES_TABLE);
         if(!doesExist) {
@@ -79,7 +100,9 @@ export class DatabaseService {
         this._createdTablesObservable.next(true);
     }
 
-    public insertIntoTable(tableName: string, values: ConversationModel | Array<WordModel>): Promise<any> {
+    public insertIntoTable(
+        tableName: string, 
+        values: ConversationModel | Array<WordModel> | Array<ReactionModel>): Promise<any> {
         return this.db.insert(values).into(tableName);
     }
 

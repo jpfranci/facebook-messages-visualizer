@@ -1,4 +1,4 @@
-import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
+import {  NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 import { WordModel, ConversationModel } from '../../core/models';
 import { debounceTime, distinctUntilChanged, tap, filter, switchMap, map, take } from 'rxjs/operators';

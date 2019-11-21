@@ -6,6 +6,9 @@
       <tab *ngIf = "this._messageProvider._hasDataSubject | async" heading = 'Visualize Data' active = "true">
         <search-component></search-component>
       </tab>
+      <tab *ngIf = "this._messageProvider._hasDataSubject | async" heading = "Conversation Summaries">
+        
+      </tab>
       <tab heading = 'Load Data' class = "loadTab">
         <div class = "container">
           <ngb-accordion style = "justify-self: start" #acc="ngbAccordion">
@@ -16,7 +19,7 @@
                 Make sure to request your data in a JSON format as shown below: <br><br>
                 <img style = "width: 100%" src="../../assets/settings-for-download.png"><br><br>
                 Please note that your data may take a day or so for Facebook to process and is only available for a limited time. <br><br>
-                After you get an email notification from Facebook, download the .zip file from the Available Copies tab and load any conversation by going to: <br>
+                After you get an email notification from Facebook, download the .zip file from the Available Copies tab and load any conversation in: <br>
                 messages -> inbox -> (FOLDER OF CONVERSATION YOU WANT TO ANALYZE) -> message_1.json
               </ng-template>
             </ngb-panel>

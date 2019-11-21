@@ -1,4 +1,5 @@
 import { Component } from "@angular/core";
+import { MessageProvider } from "../../core/services";
 
 @Component({
     selector: 'summary-tab',
@@ -6,7 +7,7 @@ import { Component } from "@angular/core";
     styleUrls: ['./summary-tab-component.scss']
   })
 export class SummaryTabComponent {
-    constructor() {
+    constructor(private _messageProvider: MessageProvider) {
 
     }
 }

@@ -11,6 +11,7 @@ import { NgxSpinnerService } from "ngx-spinner";
 import { ConversationModel } from '../../models/conversation-model';
 import { MessageProvider } from './message-provider';
 import { Message } from '@angular/compiler/src/i18n/i18n_ast';
+import { ReactionModel } from '../../models';
 var iconv = require('iconv-lite');
 
 @Injectable({
@@ -67,8 +68,12 @@ export class MessageLoaderService {
 
     public processMessages(messages: FacebookMessagesModel): void {
         const participants = messages.participants.map(participant => participant.name);
-        let wordsDetail: {words: Array<WordModel>, totalWords: number, dates: {}} = 
-            this.createDatabaseRepresentation(messages, messages.title);
+        let wordsDetail: {
+            words: Array<WordModel>, 
+            reactions: Array<ReactionModel>, 
+            totalWords: number, 
+            dates: any
+        } = this.createDatabaseRepresentation(messages, messages.title);
         const numToInsert: number = wordsDetail.words.length > MessageLoaderService.DEFAULT_DB_STORAGE ? 
         MessageLoaderService.DEFAULT_DB_STORAGE : wordsDetail.words.length;
         const conversationModel: ConversationModel = {
@@ -79,12 +84,17 @@ export class MessageLoaderService {
             processedWords: wordsDetail.words.length,
             storedWords: numToInsert,
             totalMessages: messages.messages.length,
-            dates: JSON.stringify(wordsDetail.dates),
+            dates: JSON.stringify(wordsDetail.dates.content),
+            photos: JSON.stringify(wordsDetail.dates.photos),
+            stickers: JSON.stringify(wordsDetail.dates.stickers),
+            videos: JSON.stringify(wordsDetail.dates.videos),
+            gifs: JSON.stringify(wordsDetail.dates.gifs),
             startDate: new Date(messages.messages[messages.messages.length - 1].timestamp_ms).toString(),
             endDate: new Date(messages.messages[0].timestamp_ms).toString()
         }
         this._messageProvider.setMemoryModel(wordsDetail.words, conversationModel);
-        this.insertWords(wordsDetail.words, numToInsert, conversationModel);
+        this._insertReactions(wordsDetail.reactions);
+        this._insertWords(wordsDetail.words, numToInsert, conversationModel);
     }
 
     public getTotalFrequency(frequencies: {}): number {
@@ -97,7 +107,11 @@ export class MessageLoaderService {
         return accum;
     }
 
-    private async insertWords(
+    private async _insertReactions(reactions: Array<ReactionModel>): Promise<void> {
+        await this._databaseService.insertIntoTable(DatabaseService.REACTIONS_TABLE, reactions);
+    }
+
+    private async _insertWords(
         words: Array<WordModel>, 
         numToInsert: number, 
         conversationModel: ConversationModel): Promise<void> {
@@ -119,45 +133,104 @@ export class MessageLoaderService {
         facebookMessageModel: FacebookMessagesModel, 
         oDisplayName: string): {
             words: Array<WordModel>,
+            reactions: Array<ReactionModel>
             totalWords: number ,
-            dates: {}
+            dates: any
         } {
             let totalWords: number = 0;
             let wordObject: {} = {};
-            let dates: {} = {};
-            facebookMessageModel.messages.forEach((messageModel: MessageModel) => {
+            let dates: any = {
+                content: {},
+                photos: {},
+                stickers: {},
+                gifs: {},
+                videos: {}
+            };
+            let reactionObject: {} = {};
+            // for loops are much more performant than forEach
+            for (let i = 0, len = facebookMessageModel.messages.length; i < len; i++) {
+                const messageModel: MessageModel = facebookMessageModel.messages[i];
                 const dateString: string = new Date(messageModel.timestamp_ms).toDateString();
                 const sender: string = messageModel.sender_name;
-                this._addToDates(dates, dateString, sender);
                 if (messageModel.hasOwnProperty('content')) {
+                    this._addToDates(dates.content, dateString, sender);
                     const formattedContent: string = this._cleanString(messageModel.content);
                     const tokens: Array<string> = formattedContent.split(' ');
                     totalWords += tokens.length;
                     this._processNGrams(tokens, wordObject, sender, dateString);
+                } else if (messageModel.hasOwnProperty('reactions')) {
+                    this._processReactions(reactionObject, messageModel.reactions, dateString);
+                } else if (messageModel.hasOwnProperty('photos')) {
+                    this._addToDates(dates.photos, dateString, sender);
+                } else if (messageModel.hasOwnProperty('sticker')) {
+                    this._addToDates(dates.stickers, dateString, sender);
+                } else if (messageModel.hasOwnProperty('gifs')) {
+                    this._addToDates(dates.gifs, dateString, sender);
+                } else if (messageModel.hasOwnProperty('videos')) {
+                    this._addToDates(dates.videos, dateString, sender);
                 }
-            });
-            const sortedNames: Array<string> = Object.keys(wordObject).sort(
-                (nameA: string, nameB: string) => {
-                    return this.getTotalFrequency(wordObject[nameB].frequencies) - 
-                        this.getTotalFrequency(wordObject[nameA].frequencies);
-            });
-            const wordArray: Array<WordModel> = sortedNames.map((name) => {
-                return {
-                    word: name,
-                    displayName: oDisplayName,
-                    frequencies: JSON.stringify(wordObject[name].frequencies),
-                    dates: JSON.stringify(wordObject[name].dates),
-                    startDate: wordObject[name].startDate,
-                    endDate: wordObject[name].endDate
-                }
-            });
+            }
+            const wordArray = this._getModelArray<WordModel>(wordObject, oDisplayName, "word");
+            const reactionArray = this._getModelArray<ReactionModel>(reactionObject, oDisplayName, "reaction");
             console.log(Date.now() - this.time);
             wordObject = {};
+            reactionObject = {};
             return {
                 words: wordArray,
+                reactions: reactionArray,
                 totalWords: totalWords, 
                 dates: dates
             };
+    }
+
+    private _getModelArray<T>(accumObject: {}, displayName: string, keyDisplayName: string): Array<T> {
+        const sortedKeys: Array<string> = Object.keys(accumObject).sort(
+            (modelKeyA: string, modelKeyB: string) => {
+                return this.getTotalFrequency(accumObject[modelKeyB].frequencies) - 
+                    this.getTotalFrequency(accumObject[modelKeyA].frequencies);
+        });
+        return this._collectIntoModelArray<T>(
+            accumObject,
+            sortedKeys,
+            displayName,
+            keyDisplayName
+        )
+    }
+
+    private _collectIntoModelArray<T>(
+        accumObject: {}, 
+        keys: Array<string>, 
+        displayName: string,
+        keyDisplayName: string): Array<T> {
+
+        let modelArray: Array<any> = [];
+        for (let i = 0, len = keys.length; i < len; i++) {
+            const key: string = keys[i];
+            modelArray.push({
+                [keyDisplayName]: key,
+                displayName: displayName,
+                frequencies: JSON.stringify(accumObject[key].frequencies),
+                dates: JSON.stringify(accumObject[key].dates),
+                startDate: accumObject[key].startDate,
+                endDate: accumObject[key].endDate
+            })
+        }
+        return <Array<T>> modelArray;
+    }
+
+    private _processReactions(
+        reactionObject: {}, 
+        reactions: Array<{reaction: string, actor: string}>,
+        dateString: string): void {
+        for (let i = 0, len = reactions.length; i < len; i++) {
+            const reaction: {reaction: string, actor: string} = reactions[i];
+            const reactionToSave: string = this._cleanString(reaction.reaction);
+            if (reactionObject.hasOwnProperty(reactionToSave)) {
+                this._incrementFrequencies(reactionObject, reactionToSave, reaction.actor, dateString);
+            } else {
+                this._initFrequencies(reactionObject, reactionToSave, reaction.actor, dateString);
+            }
+        }
     }
 
     private _addToDates(dates: {}, dateString: string, sender: string): void {
@@ -181,19 +254,20 @@ export class MessageLoaderService {
         dateString: string): void {
         for (let n = 1; n <= MessageLoaderService.DEFAULTNGRAMS; n++) {
             let ngrams: Array<Array<string>> = this._generateNGrams(tokens, n);
-            ngrams.forEach((words: Array<string>) => {
+            for (let i = 0, len = ngrams.length; i < len; i++) {
+                const words = ngrams[i];
                 const wordToInsert: string = words.join(' ');
                 // filter numbers and anything in the whitelist
                 if (Number.isNaN(Number(wordToInsert)) && 
                     wordToInsert.length > 1 && 
                     words.some(word => !MessageLoaderService.WHITELIST.has(word))) {
                     if (wordObject.hasOwnProperty(wordToInsert)) {
-                        this._incrementWordFrequencies(wordObject, wordToInsert, sender, dateString);
+                        this._incrementFrequencies(wordObject, wordToInsert, sender, dateString);
                     } else {
-                        this._initWordFrequencies(wordObject, wordToInsert, sender, dateString);
+                        this._initFrequencies(wordObject, wordToInsert, sender, dateString);
                     }
                 }
-            });
+            }
         }
     }
 
@@ -214,8 +288,8 @@ export class MessageLoaderService {
         return nGrams;
     }
 
-    private _initWordFrequencies(wordObject: {}, wordToInsert: string, sender: string, dateString: string): void {
-        wordObject[wordToInsert] = {
+    private _initFrequencies(accumObject: {}, toInsert: string, sender: string, dateString: string): void {
+        accumObject[toInsert] = {
             frequencies: {
                 [sender]: 1
             },
@@ -229,22 +303,22 @@ export class MessageLoaderService {
         }
     }
 
-    private _incrementWordFrequencies(wordObject: {}, wordToInsert: string, sender: string, dateString: string): void {
-        wordObject[wordToInsert].startDate = dateString;
-        if (wordObject[wordToInsert].frequencies.hasOwnProperty(sender)) {
-            wordObject[wordToInsert].frequencies[sender] = wordObject[wordToInsert].frequencies[sender] + 1
+    private _incrementFrequencies(accumObject: {}, toInsert: string, sender: string, dateString: string): void {
+        accumObject[toInsert].startDate = dateString;
+        if (accumObject[toInsert].frequencies.hasOwnProperty(sender)) {
+            accumObject[toInsert].frequencies[sender] = accumObject[toInsert].frequencies[sender] + 1
         } else {
-            wordObject[wordToInsert].frequencies[sender] = 1;
+            accumObject[toInsert].frequencies[sender] = 1;
         }
-        if (wordObject[wordToInsert].dates[sender]) {
-            if (wordObject[wordToInsert].dates[sender].hasOwnProperty(dateString)) {
-                wordObject[wordToInsert].dates[sender][dateString] = 
-                    wordObject[wordToInsert].dates[sender][dateString] + 1;
+        if (accumObject[toInsert].dates[sender]) {
+            if (accumObject[toInsert].dates[sender].hasOwnProperty(dateString)) {
+                accumObject[toInsert].dates[sender][dateString] = 
+                    accumObject[toInsert].dates[sender][dateString] + 1;
             } else {
-                wordObject[wordToInsert].dates[sender][dateString] = 1;
+                accumObject[toInsert].dates[sender][dateString] = 1;
             }
         } else {
-            wordObject[wordToInsert].dates[sender] = {
+            accumObject[toInsert].dates[sender] = {
                 [dateString]: 1
             }
         }
