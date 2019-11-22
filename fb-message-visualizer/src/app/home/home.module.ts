@@ -7,6 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 import {NgbModule, NgbAccordionModule} from '@ng-bootstrap/ng-bootstrap';
 import {ChartsModule} from 'ng2-charts';
+import { FontAwesomeModule, FaIconLibrary } from '@fortawesome/angular-fontawesome';
 
 import { HomeRoutingModule } from './home-routing.module';
 
@@ -22,6 +23,9 @@ import { ChartTypeFilterComponent } from './graph-tab/chart-type-filter-componen
 import { GroupFilterComponent } from './graph-tab/group-filter-component';
 import { TotalFilterComponent } from './graph-tab/total-filter-component';
 import { SummaryTabComponent } from './summary-tab/summary-tab-component';
+import { faCalendar, faCalendarAlt, faCog } from '@fortawesome/free-solid-svg-icons';
+import { ChartFilters } from './graph-tab/chart-filters';
+
 
 @NgModule({
   declarations: [
@@ -33,7 +37,8 @@ import { SummaryTabComponent } from './summary-tab/summary-tab-component';
     ChartTypeFilterComponent,
     GroupFilterComponent,
     TotalFilterComponent,
-    SummaryTabComponent
+    SummaryTabComponent,
+    ChartFilters
   ],
   imports: [
     CommonModule, 
@@ -48,7 +53,12 @@ import { SummaryTabComponent } from './summary-tab/summary-tab-component';
     TypeaheadModule.forRoot(),
     ChartsModule,
     NgbAccordionModule,
-    ModalModule.forRoot()
+    ModalModule.forRoot(),
+    FontAwesomeModule
   ]
 })
-export class HomeModule {}
+export class HomeModule {
+  constructor(private library: FaIconLibrary) {
+    library.addIcons(faCalendarAlt, faCog);
+  }
+}

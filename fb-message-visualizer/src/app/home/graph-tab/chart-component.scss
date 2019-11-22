@@ -7,10 +7,15 @@
 
     .datepicker-container {
         display: flex;
-        justify-content: space-evenly;
+        justify-content: space-between;
         align-items: center;
-        max-width: 80vw;
+        min-width: 60vw;
         flex-wrap: wrap;
+    }
+
+    .settings {
+        align-self: flex-end;
+        margin: 10px 15px;
     }
 
     .accordion {

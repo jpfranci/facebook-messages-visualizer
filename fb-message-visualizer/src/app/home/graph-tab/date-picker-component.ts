@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from "@angular/core";
 import { NgbDateStruct, NgbDate } from "@ng-bootstrap/ng-bootstrap";
+import { faCalendar } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
     selector: 'date-picker',

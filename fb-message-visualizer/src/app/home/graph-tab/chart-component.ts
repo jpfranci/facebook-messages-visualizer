@@ -4,6 +4,7 @@ import { MessageFormatterService } from "../../core/services/fb-message-loader/m
 import { ChartControl } from "../control/chart-control";
 import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
 import { MessageProvider, GraphMessageProvider } from "../../core/services";
+import { ModalDirective } from "ngx-bootstrap";
 
 @Component({
     selector: 'chart-component',
@@ -12,6 +13,7 @@ import { MessageProvider, GraphMessageProvider } from "../../core/services";
   })
 export class ChartComponent {
   @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective;
+  @ViewChild(ModalDirective, { static: false }) modal: ModalDirective;
   private _chartControl: ChartControl;
   private _startDate: NgbDateStruct;
   private _endDate: NgbDateStruct;

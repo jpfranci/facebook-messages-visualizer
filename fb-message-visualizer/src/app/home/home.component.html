@@ -6,8 +6,8 @@
       <tab *ngIf = "this._messageProvider._hasDataSubject | async" heading = 'Visualize Data' active = "true">
         <search-component></search-component>
       </tab>
-      <tab *ngIf = "this._messageProvider._hasDataSubject | async" heading = "Conversation Summaries">
-        
+      <tab *ngIf = "this._messageProvider._hasDataSubject | async" heading = "Quick Stats">
+        <summary-tab></summary-tab>
       </tab>
       <tab heading = 'Load Data' class = "loadTab">
         <div class = "container">

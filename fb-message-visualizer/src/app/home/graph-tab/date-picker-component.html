@@ -13,9 +13,12 @@
                     #d="ngbDatepicker">
             <div class="input-group-append">
                 <button 
-                    class="btn btn-outline-secondary calendar" 
+                    class="btn btn-outline-secondary" 
                     (click)="d.toggle()" 
                     type="button">
+                    <fa-icon 
+                        [icon]="['fas', 'calendar-alt']"
+                        class = "calendar"></fa-icon>
                 </button>
             </div>
             </div>

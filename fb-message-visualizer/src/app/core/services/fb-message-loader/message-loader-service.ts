@@ -55,7 +55,7 @@ export class MessageLoaderService {
                 take(1)
             ).subscribe((content: FacebookMessagesModel) => {
                 try {
-                    this.processMessages(content);
+                    this._processMessages(content);
                 } catch(err) {
                     console.log(err);
                     errorHandler(new Error("Error processing Facebook message file, make sure that the file you provided is the one downloaded from requesting your data from Facebook."));
@@ -66,7 +66,7 @@ export class MessageLoaderService {
         }       
     }
 
-    public processMessages(messages: FacebookMessagesModel): void {
+    private _processMessages(messages: FacebookMessagesModel): void {
         const participants = messages.participants.map(participant => participant.name);
         let wordsDetail: {
             words: Array<WordModel>, 
@@ -107,8 +107,18 @@ export class MessageLoaderService {
         return accum;
     }
 
+    public sumUpDatesObject(dates: any): number {
+        return Object.keys(dates).reduce((accum, participant) => {
+            const participantTotal = Object.keys(dates[participant]).reduce((accumDate, date) => {
+                return accumDate + dates[participant][date];
+            }, 0)
+            return participantTotal + accum;
+        }, 0)
+    }
+
     private async _insertReactions(reactions: Array<ReactionModel>): Promise<void> {
         await this._databaseService.insertIntoTable(DatabaseService.REACTIONS_TABLE, reactions);
+        this._messageProvider.addToReactions(reactions);
     }
 
     private async _insertWords(
@@ -124,7 +134,6 @@ export class MessageLoaderService {
             }
             await this._databaseService.insertIntoTable(DatabaseService.WORDS_TABLE, words.slice(currentEnd, numToInsert))
                 .catch(err => console.log(err));
-            // insert conversation history last
             await this._databaseService.insertIntoTable(DatabaseService.CONVERSATION_TABLE, conversationModel)
                 .catch(err => console.log(err));
     }
@@ -158,15 +167,21 @@ export class MessageLoaderService {
                     const tokens: Array<string> = formattedContent.split(' ');
                     totalWords += tokens.length;
                     this._processNGrams(tokens, wordObject, sender, dateString);
-                } else if (messageModel.hasOwnProperty('reactions')) {
-                    this._processReactions(reactionObject, messageModel.reactions, dateString);
-                } else if (messageModel.hasOwnProperty('photos')) {
-                    this._addToDates(dates.photos, dateString, sender);
-                } else if (messageModel.hasOwnProperty('sticker')) {
+                }
+                if (messageModel.hasOwnProperty('sticker')) {
                     this._addToDates(dates.stickers, dateString, sender);
-                } else if (messageModel.hasOwnProperty('gifs')) {
+                } 
+                if (messageModel.hasOwnProperty('gifs')) {
                     this._addToDates(dates.gifs, dateString, sender);
-                } else if (messageModel.hasOwnProperty('videos')) {
+                }
+                if (messageModel.hasOwnProperty('reactions')) {
+                    this._processReactions(reactionObject, messageModel.reactions, dateString);
+                }
+                if (messageModel.hasOwnProperty('photos')) {
+                    this._addToDates(dates.photos, dateString, sender);
+                } 
+               
+                if (messageModel.hasOwnProperty('videos')) {
                     this._addToDates(dates.videos, dateString, sender);
                 }
             }
@@ -275,8 +290,6 @@ export class MessageLoaderService {
         // fb messages are encoded with latin1, so have to encode strings as latin1 
         // before reading as utf-8
         const decodedString: string = iconv.decode(iconv.encode(str.toLowerCase(), 'latin1'), 'utf-8');
-       // const withoutPunctuation: string = decodedString.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-       // const withoutPunctuationAndNoExtraSpaces: string = withoutPunctuation.replace(/\s{2,}/g," ");
         return decodedString;
     }
 

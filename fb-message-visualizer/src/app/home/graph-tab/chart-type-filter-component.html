@@ -1,6 +1,7 @@
 <div 
     *ngIf="this._graphMessageProvider.chartTypeObservable | async as chartType" 
     class="btn-group dropdown" 
+    style = "display: flex; flex-direction: column;"
     dropdown  
     [autoClose] = "true">
         <button 

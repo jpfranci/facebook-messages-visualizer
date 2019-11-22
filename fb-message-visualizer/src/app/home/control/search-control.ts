@@ -24,9 +24,11 @@ export class SearchControl {
           this._wordModels = this._messageProvider.inMemorySubject;
         }
       })
+
+      // this._wordModels = this._graphMessageProvider.wordsObservable;
       
       this._graphMessageProvider.currentConversation.subscribe((conversationModel: ConversationModel) => {
-        this._wordModels = this._messageProvider.getWords(conversationModel.displayName, "");
+       this._wordModels = this._messageProvider.getWords(conversationModel.displayName, "");
         this._selectedConversation = conversationModel;
       })
     }

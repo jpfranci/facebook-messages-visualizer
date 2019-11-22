@@ -10,7 +10,7 @@
             type="button" 
             class="btn btn-primary dropdown-toggle"
             aria-controls="dropdown-animated">
-            {{ "Currently viewing " + displayName }}
+            {{ "Currently viewing chat with " + displayName }}
         </button>
             <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
                 role="menu" aria-labelledby="button-animated">
@@ -51,10 +51,6 @@
                 </li>
             </ul>
         </div>
-        <filter-participants class = "dropdown"></filter-participants>
-        <chart-type-filter class = "dropdown"></chart-type-filter>
-        <group-filter class = "dropdown"></group-filter>
-        <total-filter class = "dropdown"></total-filter>
 </div>
 <input type="text" 
        class="form-control" 

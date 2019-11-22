@@ -137,6 +137,10 @@ export class GraphMessageProvider {
         this._chartOptionsObservable.next(Object.assign({}, chartOptions));
     }
 
+    public get wordsObservable(): Observable<Array<WordModel>> {
+        return this._wordModelsObservable;
+    }
+
     private capitalizeFirstLetter(str: string): string {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
@@ -181,8 +185,7 @@ export class GraphMessageProvider {
 
     public get currentConversation(): Observable<ConversationModel> {
         return this._currentConversationObservable.pipe(
-            filter(conversationModel => conversationModel !== undefined),
-            take(1)
+            filter(conversationModel => conversationModel !== undefined)
         );
     }
 

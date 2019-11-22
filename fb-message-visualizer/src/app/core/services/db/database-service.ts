@@ -19,7 +19,7 @@ export class DatabaseService {
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: './test123.db',
+              filename: './testxdxd.db',
             },
           });
         
@@ -106,12 +106,22 @@ export class DatabaseService {
         return this.db.insert(values).into(tableName);
     }
 
-    public getAllFromTable(tableName: string): Promise<Array<ConversationModel>> | Promise<Array<WordModel>> {
-        return this.db(tableName);
+    public getAllFromTable(tableName: string): Promise<Array<ConversationModel>> | Promise<Array<WordModel>> | Promise<Array<ReactionModel>> {
+        return this.db.transaction((trx) => {
+            return trx
+                .select()
+                .table(tableName)
+        });
     }
 
     public getAllFromTableWithDisplayName(tableName: string, displayName: string): Promise<any> {
-        return this.db(tableName).where({displayName: displayName}).catch(err => console.log(err));
+        return this.db.transaction((trx) => {
+            return trx
+                .select()
+                .table(tableName)
+                .where({displayName: displayName})
+                .catch(err => console.log(err))
+        })
     }
 
     public getAllWordsThatMatchPattern(tableName: string, pattern: string): Promise<Array<WordModel>> {

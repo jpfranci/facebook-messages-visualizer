@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, from, Observable } from 'rxjs';
-import { take, switchMap, filter, map, tap } from 'rxjs/operators';
+import { take, switchMap, filter, map, tap, debounceTime } from 'rxjs/operators';
 import { WordModel } from '../../models/word-model';
 import { DatabaseService } from '../db/database-service';
-import { ConversationModel } from '../../models';
+import { ConversationModel, ReactionModel } from '../../models';
 
 @Injectable({
     providedIn: 'root'
@@ -12,10 +12,12 @@ export class MessageProvider {
     private _inMemorySubject: BehaviorSubject<Array<WordModel>>;
     private _hasDataSubject: BehaviorSubject<boolean>;
     private _availableConversations: BehaviorSubject<Array<ConversationModel>>;
+    private _availableReactions: BehaviorSubject<Array<ReactionModel>>;
     private _isAppReadyToUse: BehaviorSubject<boolean>;
 
     constructor(private _databaseService: DatabaseService) {
         this._inMemorySubject = new BehaviorSubject<Array<WordModel>>([]);
+        this._availableReactions = new BehaviorSubject<Array<ReactionModel>>([]);
         this._hasDataSubject = new BehaviorSubject<boolean>(false);
         this._isAppReadyToUse = new BehaviorSubject<boolean>(false);
         this._availableConversations = new BehaviorSubject<Array<ConversationModel>>([]);
@@ -29,10 +31,22 @@ export class MessageProvider {
                 if (conversationModels.length > 0) {
                     this._hasDataSubject.next(true);
                     this._availableConversations.next(conversationModels);
+                    this.getReactions().subscribe((reactions) => {
+                        this._availableReactions.next(reactions);
+                    })
                 }
             },
             (err: Error) => console.log(err)
         )
+    }
+
+    public get reactionModels(): Observable<Array<ReactionModel>> {
+        return this._availableReactions;
+    }
+
+    public addToReactions(reactionsModels: Array<ReactionModel>): void {
+        const newReactionModels = [...this._availableReactions.getValue(), ...reactionsModels];
+        this._availableReactions.next(newReactionModels);
     }
 
     public setMemoryModel(wordModels: Array<WordModel>, conversationModel: ConversationModel): void {
@@ -41,13 +55,8 @@ export class MessageProvider {
             let currMemoryModel = this._inMemorySubject.getValue();
             this._inMemorySubject.next(wordModels);
             this._hasDataSubject.next(true);
-            let currConversations: Array<ConversationModel> = this._availableConversations.getValue();
+            let currConversations: Array<ConversationModel> = this._availableConversations.getValue().slice();
             if (!currConversations.map(conversationModel => conversationModel.displayName).includes(conversationModel.displayName)) {
-                if (currMemoryModel.length > 0) {
-                    currConversations = currConversations.filter(
-                        (conversation) => conversation.displayName !== currMemoryModel[0].displayName
-                    );
-                }
                 currConversations.push(conversationModel);
                 this._availableConversations.next(currConversations); 
             }
@@ -74,6 +83,14 @@ export class MessageProvider {
                 filter((conversationModels: Array<ConversationModel>) => conversationModels.length > 0),
                 map((conversationModels: Array<ConversationModel>) => conversationModels[0])
             );
+    }
+
+    public getReactions(): Observable<Array<ReactionModel>> {
+        return <Observable<Array<ReactionModel>>> from(this._databaseService.getAllFromTable(DatabaseService.REACTIONS_TABLE)
+            ).pipe(
+                filter(reactions => reactions.length > 0),
+                take(1)
+            )
     }
 
     public get availableConversations(): Observable<Array<ConversationModel>> {
