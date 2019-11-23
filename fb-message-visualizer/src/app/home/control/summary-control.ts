@@ -1,20 +1,83 @@
-import {GraphMessageProvider} from "../../core/services";
+import {GraphMessageProvider, MessageProvider} from "../../core/services";
 import {ModalDirective} from "ngx-bootstrap";
-import {ConversationModel} from "../../core/models";
+import {ConversationModel, ConversationModelConversions, ReactionModel} from "../../core/models";
+import {BehaviorSubject, Observable} from "rxjs";
 
 export class SummaryControl {
   private _chartModal: ModalDirective;
-  private _conversationModel: ConversationModel;
-  private _availableGeneralFilters: Array<{}>;
+  private _conversationModel: BehaviorSubject<ConversationModel>;
+  private _availableGeneralDates: BehaviorSubject<Array<any>>;
+  private _reactionModels: BehaviorSubject<Array<ReactionModel>>;
+  private _activeGeneralDate: BehaviorSubject<any>;
 
-  constructor(private _graphMessageProvider: GraphMessageProvider) {}
+  public static MESSAGE_TYPE = "messages";
+  public static PHOTOS_TYPE = "photos";
+  public static STICKERS_TYPE = "stickers";
+  public static GIFS_TYPE = "gifs";
+  public static VIDEOS_TYPE = "videos";
+  public static REACTIONS_TYPE = "reactions";
+
+  constructor(private _graphMessageProvider: GraphMessageProvider,
+              private _messageProvider: MessageProvider) {
+    this._conversationModel = new BehaviorSubject<ConversationModel>(undefined);
+    this._availableGeneralDates = new BehaviorSubject<Array<{}>>([]);
+    this._activeGeneralDate = new BehaviorSubject<any>(undefined);
+    this._reactionModels = new BehaviorSubject<Array<ReactionModel>>([]);
+  }
+
+  public get activeGeneralDate(): Observable<any> {
+    return this._activeGeneralDate;
+  }
+
+  public get availableGeneralDates(): Observable<Array<any>> {
+    return this._availableGeneralDates;
+  }
 
   public set chartModal(chartModal: ModalDirective) {
     this._chartModal = chartModal;
   }
 
   public showChartModal(conversationModel: ConversationModel): void {
-    this._conversationModel = conversationModel;
+    this._conversationModel.next(conversationModel);
+    this._calculateAvailableGeneralDates(conversationModel);
+    this._graphMessageProvider.isTemporaryMode = true;
+    this._graphMessageProvider.changeConversationModel(conversationModel);
     this._chartModal.show();
+  }
+
+  public hasReactions(reactionModels: Array<ReactionModel>, displayName: string): boolean {
+    return reactionModels.some(reactionModel => reactionModel.displayName === displayName);
+  }
+
+  public changeGeneralDateType(generalDate: any) {
+    this._activeGeneralDate.next(generalDate);
+  }
+
+  private _extractReactionsForModel(reactionModels: Array<ReactionModel>, displayName: string): Array<ReactionModel> {
+    return reactionModels.filter(reactionModel => reactionModel.displayName === displayName);
+  }
+
+  private _calculateAvailableGeneralDates(conversationModel: ConversationModel) {
+    const generalDates = [
+        {type: SummaryControl.MESSAGE_TYPE, dates: conversationModel.dates},
+        {type: SummaryControl.PHOTOS_TYPE, dates: conversationModel.photos},
+        {type: SummaryControl.STICKERS_TYPE, dates: conversationModel.stickers},
+        {type: SummaryControl.GIFS_TYPE, dates: conversationModel.gifs},
+        {type: SummaryControl.VIDEOS_TYPE, dates: conversationModel.videos}
+      ];
+    const generalDatesToDisplay = generalDates.filter((dateObject) => !ConversationModelConversions.isEmpty(dateObject.dates));
+    this._availableGeneralDates.next(generalDatesToDisplay);
+    this._activeGeneralDate.next(generalDates[0]);
+    this._messageProvider.getReactions().subscribe((reactions) => {
+      const reactionsForConversation = this._extractReactionsForModel(reactions, conversationModel.displayName);
+      if (reactionsForConversation.length !== 0) {
+        this._reactionModels.next(reactionsForConversation.slice());
+        let generalDatesWithReactionModels = generalDatesToDisplay.slice();
+        const reactionModelForGeneralDates = {type: SummaryControl.REACTIONS_TYPE, dates: ""};
+        generalDatesWithReactionModels.push(reactionModelForGeneralDates);
+        console.log(generalDatesWithReactionModels);
+        this._availableGeneralDates.next(generalDatesWithReactionModels);
+      }
+    })
   }
 }

@@ -1,14 +1,14 @@
-<button 
-    type="button" 
-    class="btn btn-primary chart-filters-container" 
+<button
+    type="button"
+    class="btn btn-primary chart-filters-container"
     (click)="this.modal.show()">
     Chart settings
-</button> 
-<div 
-    class="modal fade" 
-    bsModal 
+</button>
+<div
+    class="modal fade"
+    bsModal
     #modal="bs-modal"
-    role="dialog" 
+    role="dialog"
     aria-labelledby="dialog-events-name">
     <div class="modal-dialog modal-sm"  style = "margin-left: 25vw;">
             <div class="modal-content filters-modal-content">
@@ -23,6 +23,7 @@
                 <chart-type-filter class = "dropdown"></chart-type-filter>
                 <group-filter class = "dropdown"></group-filter>
                 <total-filter class = "dropdown"></total-filter>
+                <x-axis-selection class = "dropdown"></x-axis-selection>
             </div>
         </div>
     </div>

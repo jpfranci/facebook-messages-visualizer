@@ -1,25 +1,27 @@
-<div 
-    *ngIf="this._graphMessageProvider.chartTypeObservable | async as chartType" 
-    class="btn-group dropdown" 
+<div *ngIf = "this._graphMessageProvider.showTimeOptionsObservable | async">
+  <div
+    *ngIf="this._graphMessageProvider.chartTypeObservable | async as chartType"
+    class="btn-group dropdown"
     style = "display: flex; flex-direction: column;"
-    dropdown  
+    dropdown
     [autoClose] = "true">
-        <button 
-            id="button-animated" 
-            dropdownToggle 
-            type="button" 
-            class="btn btn-primary dropdown-toggle"
-            aria-controls="dropdown-animated">
-            {{ _conversionMap.get(chartType) }}
-        </button>
-    <ul id="dropdown-animated" 
+    <button
+      id="button-animated"
+      dropdownToggle
+      type="button"
+      class="btn btn-primary dropdown-toggle"
+      aria-controls="dropdown-animated">
+      {{ _conversionMap.get(chartType) }}
+    </button>
+    <ul id="dropdown-animated"
         *dropdownMenu class="dropdown-menu"
-        role="menu" 
+        role="menu"
         aria-labelledby="button-animated">
-        <li role = "menuitem" *ngFor = "let type of _types">
-            <a class = "dropdown-item" href="#" (click) = "onChartTypeSelect(type)">
-            {{ _conversionMap.get(type) }}
-            </a>
-        </li>
+      <li role = "menuitem" *ngFor = "let type of _types">
+        <a class = "dropdown-item" href="#" (click) = "onChartTypeSelect(type)">
+          {{ _conversionMap.get(type) }}
+        </a>
+      </li>
     </ul>
+  </div>
 </div>

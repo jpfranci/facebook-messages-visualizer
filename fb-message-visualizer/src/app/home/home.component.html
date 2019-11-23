@@ -3,10 +3,10 @@
     {{ 'PAGES.HOME.TITLE' | translate }}
   </h1>
   <tabset class = "tabset">
-      <tab *ngIf = "this._messageProvider._hasDataSubject | async" heading = 'Visualize Data' active = "true">
+      <tab *ngIf = "this._messageProvider.hasDataSubject | async" heading = 'Visualize Data' active = "true">
         <search-component></search-component>
       </tab>
-      <tab *ngIf = "this._messageProvider._hasDataSubject | async" heading = "Quick Stats">
+      <tab *ngIf = "this._messageProvider.hasDataSubject | async" heading = "Quick Stats">
         <summary-tab></summary-tab>
       </tab>
       <tab heading = 'Load Data' class = "loadTab">
@@ -29,11 +29,10 @@
     </tab>
   </tabset>
   <div *ngFor = "let alert of _alerts" class = 'alert'>
-      <alert 
+      <alert
         [type] = "alert.type"
         [dismissible] = "alert.dismissible"
-        [dismissOnTimeout]="alert.timeout"
-        (onClosed) = "onClosed(alert)">
+        [dismissOnTimeout]="alert.timeout">
         {{ alert.msg }}
       </alert>
     </div>

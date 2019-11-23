@@ -1,0 +1,18 @@
+<div
+  *ngIf="this._graphMessageProvider.xAxisObservable | async as activeXAxis"
+  class="btn-group dropdown"
+  dropdown
+  [autoClose] = "true">
+  <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+          aria-controls="dropdown-animated">
+    {{ activeXAxis }}
+  </button>
+  <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
+      role="menu" aria-labelledby="button-animated">
+    <li role = "menuitem" *ngFor = "let xAxisOption of this._dropdownOptions">
+      <a class = "dropdown-item" href="#" (click) = "_graphMessageProvider.changeXAxis(xAxisOption)">
+        {{ xAxisOption }}
+      </a>
+    </li>
+  </ul>
+</div>

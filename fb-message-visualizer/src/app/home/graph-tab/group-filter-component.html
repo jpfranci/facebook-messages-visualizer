@@ -1,18 +1,20 @@
-<div 
-    *ngIf="this._graphMessageProvider.chartGroupModelObservable | async as chartGroup"
-    class="btn-group dropdown" 
-    dropdown  
-    [autoClose] = "true">
-    <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
-            aria-controls="dropdown-animated">
-        {{ _conversionMap.get(chartGroup) }}
-    </button>
-    <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
-        role="menu" aria-labelledby="button-animated">
-        <li role = "menuitem" *ngFor = "let groupModel of this._models">
-            <a class = "dropdown-item" href="#" (click) = "_onGroupModelSelect(groupModel)">
-                {{ _conversionMap.get(groupModel) }}
-            </a>
-        </li>
-    </ul>
+<div *ngIf = "this._graphMessageProvider.showTimeOptionsObservable | async">
+  <div
+      *ngIf="this._graphMessageProvider.chartGroupModelObservable | async as chartGroup"
+      class="btn-group dropdown"
+      dropdown
+      [autoClose] = "true">
+      <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+              aria-controls="dropdown-animated">
+          {{ _conversionMap.get(chartGroup) }}
+      </button>
+      <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
+          role="menu" aria-labelledby="button-animated">
+          <li role = "menuitem" *ngFor = "let groupModel of this._models">
+              <a class = "dropdown-item" href="#" (click) = "_onGroupModelSelect(groupModel)">
+                  {{ _conversionMap.get(groupModel) }}
+              </a>
+          </li>
+      </ul>
+  </div>
 </div>

@@ -1,0 +1,20 @@
+<div *ngIf="this.control.availableGeneralDates | async as generalDates">
+  <div
+    *ngIf="this.control.activeGeneralDate | async as activeGeneralDate"
+    class="btn-group dropdown"
+    dropdown
+    [autoClose] = "true">
+    <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+            aria-controls="dropdown-animated">
+      {{ _conversionMap.get(activeGeneralDate.type) }}
+    </button>
+    <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
+        role="menu" aria-labelledby="button-animated">
+      <li role = "menuitem" *ngFor = "let generalDate of generalDates">
+        <a class = "dropdown-item" href="#" (click) = "this.control.changeGeneralDateType(generalDate)">
+          {{ _conversionMap.get(generalDate.type) }}
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>

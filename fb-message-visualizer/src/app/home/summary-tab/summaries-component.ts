@@ -20,11 +20,11 @@ export class SummariesComponent {
   }
 
   private _hasReactions(reactionModels: Array<ReactionModel>, displayName: string): boolean {
-    return reactionModels.some(reactionModel => reactionModel.displayName === displayName);
+    return this.control.hasReactions(reactionModels, displayName);
   }
 
   private _isPopulated(conversationModelField: string): boolean {
-    return ConversationModelConversions.isEmpty(conversationModelField);
+    return !ConversationModelConversions.isEmpty(conversationModelField);
   }
 
   private _getTotalOfReactions(reactionModels, displayName: string): number {

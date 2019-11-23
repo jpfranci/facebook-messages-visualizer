@@ -6,6 +6,6 @@ export class ConversationModelConversions {
     }
 
     public static isEmpty(dateObject: string): boolean {
-      return dateObject != '{}';
+      return dateObject === '{}';
     }
 }

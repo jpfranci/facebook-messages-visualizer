@@ -27,6 +27,8 @@ import { faCalendar, faCalendarAlt, faCog } from '@fortawesome/free-solid-svg-ic
 import { ChartFilters } from './graph-tab/chart-filters';
 import {SummariesComponent} from "./summary-tab/summaries-component";
 import {ChartModalComponent} from "./summary-tab/chart-modal-component";
+import {SelectDateTypeComponent} from "./summary-tab/select-date-type-component";
+import {XAxisSelectionComponent} from "./graph-tab/x-axis-selection-component";
 
 
 @NgModule({
@@ -42,7 +44,9 @@ import {ChartModalComponent} from "./summary-tab/chart-modal-component";
     SummaryTabComponent,
     ChartFilters,
     SummariesComponent,
-    ChartModalComponent
+    ChartModalComponent,
+    SelectDateTypeComponent,
+    XAxisSelectionComponent
   ],
   imports: [
     CommonModule,

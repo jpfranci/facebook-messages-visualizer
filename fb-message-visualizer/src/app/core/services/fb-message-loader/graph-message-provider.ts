@@ -6,6 +6,7 @@ import { MessageProvider } from "./message-provider";
 import { filter, take, map, tap } from "rxjs/operators";
 import { MessageFormatterService } from "./message-formatter-service";
 import { SingleDataSet } from "ng2-charts";
+import {XAxisSelectionComponent} from "../../../home/graph-tab/x-axis-selection-component";
 
 @Injectable({
     providedIn: 'root'
@@ -21,6 +22,8 @@ export class GraphMessageProvider {
     private _chartTypeObservable: BehaviorSubject<ChartType>;
     private _useTotalObservable: BehaviorSubject<boolean>;
     private _groupModelObservable: BehaviorSubject<ChartGroupModel>;
+    private _xAxisDisplayObservable: BehaviorSubject<string>;
+    private _showTimeOptionsObservable: BehaviorSubject<boolean>;
 
     private _startDate: BehaviorSubject<Date>;
     private _endDate: BehaviorSubject<Date>;
@@ -46,6 +49,9 @@ export class GraphMessageProvider {
         isSeparated: true,
         isStacked: false
     };
+
+    public static TIME_AXIS = "Show Time in the Horizontal Axis";
+    public static PARTICIPANTS_AXIS = "Show Participants in the Horizontal Axis";
 
     constructor(private _messageProvider: MessageProvider,
                 private _messageFormatterService: MessageFormatterService) {
@@ -104,7 +110,29 @@ export class GraphMessageProvider {
         this._useTotalObservable = new BehaviorSubject<boolean>(true);
         this._startDate = new BehaviorSubject<Date>(new Date());
         this._endDate = new BehaviorSubject<Date>(new Date());
+        this._xAxisDisplayObservable = new BehaviorSubject<string>(XAxisSelectionComponent.TIME_AXIS);
+        this._showTimeOptionsObservable = new BehaviorSubject<boolean>(true);
         this._isTemporaryMode = false;
+    }
+
+    public get showTimeOptionsObservable(): Observable<boolean> {
+      return this._showTimeOptionsObservable;
+    }
+
+    public get xAxisObservable(): Observable<string> {
+      return this._xAxisDisplayObservable;
+    }
+
+    public changeXAxis(xAxis: string): void {
+      this._xAxisDisplayObservable.next(xAxis)
+      if (xAxis === GraphMessageProvider.TIME_AXIS) {
+        this._showTimeOptionsObservable.next(true);
+      } else {
+        this._groupModelObservable.next(GraphMessageProvider.PARTICIPANTS_AXIS);
+        this._chartTypeObservable.next('bar');
+        this._showTimeOptionsObservable.next(false);
+      }
+      this.showTimeGraph();
     }
 
     public showTimeGraph(startDate?: string, endDate?: string): void {
@@ -274,8 +302,8 @@ export class GraphMessageProvider {
         this._endDate.next(new Date(conversationModel.endDate));
         this._selectedToDisplayObservable.next(conversationModel);
         this._selectedParticipantsObservable.next(ConversationModelConversions.toParticipantsArray(conversationModel));
-        this.showTimeGraph();
     }
+
 
     public changeWord(wordModel: WordModel): void {
         this._selectedToDisplayObservable.next(wordModel);

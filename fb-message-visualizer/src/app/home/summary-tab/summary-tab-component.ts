@@ -12,6 +12,6 @@ export class SummaryTabComponent {
   private _control: SummaryControl;
   constructor(private _messageProvider: MessageProvider,
               private _graphMessageProvider: GraphMessageProvider) {
-    this._control = new SummaryControl(_graphMessageProvider);
+    this._control = new SummaryControl(_graphMessageProvider, _messageProvider);
   }
 }
