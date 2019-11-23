@@ -20,24 +20,24 @@ var iconv = require('iconv-lite');
 export class MessageLoaderService {
     fs: typeof fs;
     // stopwords taken from python nltk library with some additions
-    public static WHITELIST: Set<string> = new Set(["i", "me", "my", "myself", "we", "our", "ours", 
-        "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", 
-        "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", 
-        "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", 
-        "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", 
-        "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", 
-        "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", 
-        "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", 
-        "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", 
-        "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", 
-        "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", 
+    public static WHITELIST: Set<string> = new Set(["i", "me", "my", "myself", "we", "our", "ours",
+        "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself",
+        "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs",
+        "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is",
+        "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does",
+        "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until",
+        "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through",
+        "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on",
+        "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where",
+        "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such",
+        "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will",
         "just", "don", "should", "now", 'u', 'r', ' ',]
     );
     public static DEFAULTNGRAMS: number = 3;
     public time: number;
     public static DEFAULT_DB_STORAGE: number = 6000;
 
-    constructor(private _databaseService: DatabaseService, 
+    constructor(private _databaseService: DatabaseService,
                 private _messageProvider: MessageProvider,
                 private _spinner: NgxSpinnerService) {}
 
@@ -61,20 +61,20 @@ export class MessageLoaderService {
                     errorHandler(new Error("Error processing Facebook message file, make sure that the file you provided is the one downloaded from requesting your data from Facebook."));
                 } finally {
                     this._spinner.hide();
-                } 
-            })  
-        }       
+                }
+            })
+        }
     }
 
     private _processMessages(messages: FacebookMessagesModel): void {
         const participants = messages.participants.map(participant => participant.name);
         let wordsDetail: {
-            words: Array<WordModel>, 
-            reactions: Array<ReactionModel>, 
-            totalWords: number, 
+            words: Array<WordModel>,
+            reactions: Array<ReactionModel>,
+            totalWords: number,
             dates: any
         } = this.createDatabaseRepresentation(messages, messages.title);
-        const numToInsert: number = wordsDetail.words.length > MessageLoaderService.DEFAULT_DB_STORAGE ? 
+        const numToInsert: number = wordsDetail.words.length > MessageLoaderService.DEFAULT_DB_STORAGE ?
         MessageLoaderService.DEFAULT_DB_STORAGE : wordsDetail.words.length;
         const conversationModel: ConversationModel = {
             displayName: messages.title,
@@ -111,7 +111,7 @@ export class MessageLoaderService {
         return Object.keys(dates).reduce((accum, participant) => {
             const participantTotal = Object.keys(dates[participant]).reduce((accumDate, date) => {
                 return accumDate + dates[participant][date];
-            }, 0)
+            }, 0);
             return participantTotal + accum;
         }, 0)
     }
@@ -122,8 +122,8 @@ export class MessageLoaderService {
     }
 
     private async _insertWords(
-        words: Array<WordModel>, 
-        numToInsert: number, 
+        words: Array<WordModel>,
+        numToInsert: number,
         conversationModel: ConversationModel): Promise<void> {
             const iterations = Math.floor(numToInsert / 100);
             let currentEnd: number = 0;
@@ -139,7 +139,7 @@ export class MessageLoaderService {
     }
 
     public createDatabaseRepresentation(
-        facebookMessageModel: FacebookMessagesModel, 
+        facebookMessageModel: FacebookMessagesModel,
         oDisplayName: string): {
             words: Array<WordModel>,
             reactions: Array<ReactionModel>
@@ -170,7 +170,7 @@ export class MessageLoaderService {
                 }
                 if (messageModel.hasOwnProperty('sticker')) {
                     this._addToDates(dates.stickers, dateString, sender);
-                } 
+                }
                 if (messageModel.hasOwnProperty('gifs')) {
                     this._addToDates(dates.gifs, dateString, sender);
                 }
@@ -179,8 +179,8 @@ export class MessageLoaderService {
                 }
                 if (messageModel.hasOwnProperty('photos')) {
                     this._addToDates(dates.photos, dateString, sender);
-                } 
-               
+                }
+
                 if (messageModel.hasOwnProperty('videos')) {
                     this._addToDates(dates.videos, dateString, sender);
                 }
@@ -193,7 +193,7 @@ export class MessageLoaderService {
             return {
                 words: wordArray,
                 reactions: reactionArray,
-                totalWords: totalWords, 
+                totalWords: totalWords,
                 dates: dates
             };
     }
@@ -201,7 +201,7 @@ export class MessageLoaderService {
     private _getModelArray<T>(accumObject: {}, displayName: string, keyDisplayName: string): Array<T> {
         const sortedKeys: Array<string> = Object.keys(accumObject).sort(
             (modelKeyA: string, modelKeyB: string) => {
-                return this.getTotalFrequency(accumObject[modelKeyB].frequencies) - 
+                return this.getTotalFrequency(accumObject[modelKeyB].frequencies) -
                     this.getTotalFrequency(accumObject[modelKeyA].frequencies);
         });
         return this._collectIntoModelArray<T>(
@@ -213,8 +213,8 @@ export class MessageLoaderService {
     }
 
     private _collectIntoModelArray<T>(
-        accumObject: {}, 
-        keys: Array<string>, 
+        accumObject: {},
+        keys: Array<string>,
         displayName: string,
         keyDisplayName: string): Array<T> {
 
@@ -234,7 +234,7 @@ export class MessageLoaderService {
     }
 
     private _processReactions(
-        reactionObject: {}, 
+        reactionObject: {},
         reactions: Array<{reaction: string, actor: string}>,
         dateString: string): void {
         for (let i = 0, len = reactions.length; i < len; i++) {
@@ -263,9 +263,9 @@ export class MessageLoaderService {
     }
 
     private _processNGrams(
-        tokens: Array<string>, 
-        wordObject: {}, 
-        sender: string, 
+        tokens: Array<string>,
+        wordObject: {},
+        sender: string,
         dateString: string): void {
         for (let n = 1; n <= MessageLoaderService.DEFAULTNGRAMS; n++) {
             let ngrams: Array<Array<string>> = this._generateNGrams(tokens, n);
@@ -273,8 +273,8 @@ export class MessageLoaderService {
                 const words = ngrams[i];
                 const wordToInsert: string = words.join(' ');
                 // filter numbers and anything in the whitelist
-                if (Number.isNaN(Number(wordToInsert)) && 
-                    wordToInsert.length > 1 && 
+                if (Number.isNaN(Number(wordToInsert)) &&
+                    wordToInsert.length > 1 &&
                     words.some(word => !MessageLoaderService.WHITELIST.has(word))) {
                     if (wordObject.hasOwnProperty(wordToInsert)) {
                         this._incrementFrequencies(wordObject, wordToInsert, sender, dateString);
@@ -287,7 +287,7 @@ export class MessageLoaderService {
     }
 
     private _cleanString(str: string): string {
-        // fb messages are encoded with latin1, so have to encode strings as latin1 
+        // fb messages are encoded with latin1, so have to encode strings as latin1
         // before reading as utf-8
         const decodedString: string = iconv.decode(iconv.encode(str.toLowerCase(), 'latin1'), 'utf-8');
         return decodedString;
@@ -325,7 +325,7 @@ export class MessageLoaderService {
         }
         if (accumObject[toInsert].dates[sender]) {
             if (accumObject[toInsert].dates[sender].hasOwnProperty(dateString)) {
-                accumObject[toInsert].dates[sender][dateString] = 
+                accumObject[toInsert].dates[sender][dateString] =
                     accumObject[toInsert].dates[sender][dateString] + 1;
             } else {
                 accumObject[toInsert].dates[sender][dateString] = 1;

@@ -32,7 +32,7 @@ export class MessageFormatterService {
         },
         toDate: (unitString: string) => {
             const units: string[] = unitString.split(' ');
-            return moment().date(1).month(Number(units[0])).year(Number(units[1])).toDate();
+            return moment().date(15).month(Number(units[0])).year(Number(units[1])).toDate();
         }
     };
     public static WEEK_FORMATTER: UnitFormatter = {
@@ -53,9 +53,9 @@ export class MessageFormatterService {
     };
 
     public getSeparatedDates(
-        dates: {}, 
-        startDate: string, 
-        endDate: string, 
+        dates: {},
+        startDate: string,
+        endDate: string,
         useTotal: boolean,
         numberOfTicks: number,
         participantsToProcess: string[]): {
@@ -63,19 +63,19 @@ export class MessageFormatterService {
         unit: string
     } {
         const formatter: UnitFormatter = this._getUnitFormatters(startDate, endDate, numberOfTicks);
-        const unitMapsWithLabels: Array<{unitMap: Map<string, number>, label: string}> = 
+        const unitMapsWithLabels: Array<{unitMap: Map<string, number>, label: string}> =
             participantsToProcess.map((participant: string) => {
                 return {
                     unitMap: this._populateUnitMap([participant], formatter, dates, startDate, endDate),
                     label: participant
                 };
             });
-        
+
         const filteredUnitMapsWithLabels= unitMapsWithLabels.filter((unitMapWithLabel) => {
             return unitMapWithLabel.unitMap.size > 0
         });
 
-        const dataset: Array<{data: SingleDataSet, label: string}> =  
+        const dataset: Array<{data: SingleDataSet, label: string}> =
             filteredUnitMapsWithLabels.map((unitMapWithLabel) => {
                 return {
                     data: this._populateDataSet(unitMapWithLabel.unitMap, formatter, useTotal),
@@ -86,9 +86,9 @@ export class MessageFormatterService {
     }
 
     public getTotalDates(
-        dates: {}, 
-        startDate: string, 
-        endDate: string, 
+        dates: {},
+        startDate: string,
+        endDate: string,
         useTotal: boolean,
         numberOfTicks: number,
         participantsToProcess: string[]): {
@@ -113,7 +113,7 @@ export class MessageFormatterService {
                 totalDates.push({
                   t: timeToUse,
                   y: prev + numberOfTimesUsed
-                })
+                });
                 prev += numberOfTimesUsed;
               });
         } else {
@@ -126,12 +126,12 @@ export class MessageFormatterService {
                 })
               });
         }
-        
+
         return totalDates;
     }
 
     private _populateUnitMap(
-        participants: string[], 
+        participants: string[],
         formatter: UnitFormatter,
         dates: {},
         startDate: string,
@@ -142,23 +142,23 @@ export class MessageFormatterService {
                     let datesUsed: Array<string> = Object.keys(dates[name]);
                     datesUsed = datesUsed.filter((dateString: string) => {
                         return moment(dateString).isBetween(startDate, endDate, null, "[]");
-                    })
+                    });
                     const datesUsedGroupedByUnits: object = _.groupBy(datesUsed, formatter.groupByFunction);
                     const units = Object.keys(datesUsedGroupedByUnits);
                     units.forEach((unit: string) => {
                     const allTimesInMonth: number = datesUsedGroupedByUnits[unit].reduce(
                         (accum: number, dateString: string) => {
                             return accum + dates[name][dateString]
-                    }, 0)
+                    }, 0);
                     let numberOfTimesUsed: number = unitMap.get(unit);
                     numberOfTimesUsed = numberOfTimesUsed ? numberOfTimesUsed : 0;
                     unitMap.set(unit, numberOfTimesUsed + allTimesInMonth);
-                    }); 
+                    });
                 }
             });
             return unitMap;
     }
-    
+
     private _getSortedUnits(unitMap: Map<string, number>, formatter: UnitFormatter): string[] {
         let units = Array.from(unitMap.keys());
         units.sort((a: string, b: string) => {
@@ -177,8 +177,8 @@ export class MessageFormatterService {
 
     // returns functions that formats datestrings to optimal unit (year, month, week, or day)
     private _getUnitFormatters(
-        startDate: string, 
-        endDate: string, 
+        startDate: string,
+        endDate: string,
         numberOfTicks: number): UnitFormatter {
         const startDateAsMoment: moment.Moment = moment(startDate);
         const endDateAsMoment: moment.Moment = moment(endDate);
@@ -210,13 +210,13 @@ export class MessageFormatterService {
         };
 
         const formattersWithDiffs = [
-            yearDiffWithFormatter, 
-            quarterDiffWithFormatter, 
-            monthDiffWithFormatter, 
-            weekDiffWithFormatter, 
+            yearDiffWithFormatter,
+            quarterDiffWithFormatter,
+            monthDiffWithFormatter,
+            weekDiffWithFormatter,
             dayDiffWithFormatter
         ];
-        
+
         const closestFormatter = formattersWithDiffs.reduce((closestDateFormatter, currentFormatter) => {
             if (currentFormatter.diff > numberOfTicks - 2 && Math.abs(currentFormatter.diff - numberOfTicks) < Math.abs(closestDateFormatter.diff - numberOfTicks)) {
                 return currentFormatter;
@@ -224,13 +224,13 @@ export class MessageFormatterService {
                 return closestDateFormatter;
             }
         }, monthDiffWithFormatter)
-        
+
         return closestFormatter.dateFormatter;
     }
 }
 
 interface UnitFormatter {
-    unit: string, 
+    unit: string,
     groupByFunction: (dateString: string) => string,
     toDate: (unitString: string) => Date
 }
