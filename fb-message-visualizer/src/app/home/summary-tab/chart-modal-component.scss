@@ -1,0 +1,9 @@
+.modal-content-container {
+  display: flex;
+  justify-content: center;
+
+  .fit-content {
+    height: fit-content;
+    width: fit-content;
+  }
+}

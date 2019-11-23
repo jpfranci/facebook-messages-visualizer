@@ -1,0 +1,38 @@
+<ngb-accordion #acc="ngbAccordion">
+  <ngb-panel>
+    <ng-template ngbPanelHeader>
+      <div class = "summaries-header-container">
+        <button ngbPanelToggle class="btn btn-link p-0">{{conversationModel.displayName}}</button>
+        <button type="button" class="btn btn-primary" (click) = "control.showChartModal(conversationModel)">Show distribution</button>
+      </div>
+    </ng-template>
+    <ng-template ngbPanelContent>
+      <span class = "bold">Total Messages Sent:</span> {{conversationModel.totalMessages.toLocaleString()}} messages<br>
+      <span class = "bold">Total Words Sent:</span> {{conversationModel.totalWords.toLocaleString()}} words<br>
+      <div
+        *ngIf = "_isPopulated(conversationModel.photos)">
+          <span class = "bold">Total Photos Sent:</span> {{_getTotalOfDateObject(conversationModel.photos).toLocaleString()}} photos
+      </div>
+      <div
+        *ngIf = "_isPopulated(conversationModel.stickers)">
+          <span class = "bold">Total Stickers Sent:</span> {{_getTotalOfDateObject(conversationModel.stickers).toLocaleString()}} stickers
+      </div>
+      <div
+        *ngIf = "_messageProvider.reactionModels | async as reactionModels">
+        <div *ngIf = "_hasReactions(reactionModels, conversationModel.displayName)">
+          <span class = "bold">Total Reactions On Messages:</span> {{_getTotalOfReactions(reactionModels, conversationModel.displayName).toLocaleString()}} reactions
+        </div>
+      </div>
+      <div
+        *ngIf = "_isPopulated(conversationModel.videos)">
+          <span style = "font-weight: bold">Total Videos Sent:</span> {{_getTotalOfDateObject(conversationModel.videos).toLocaleString()}} videos
+      </div>
+      <div
+        *ngIf = "_isPopulated(conversationModel.gifs)">
+          <span class = "bold">Total Gifs Sent:</span> {{_getTotalOfDateObject(conversationModel.gifs).toLocaleString()}} gifs
+      </div>
+      <span class = "bold">Unique Words/Phrases up to {{conversationModel.nGrams}} words in length:</span> {{conversationModel.processedWords.toLocaleString()}} words/phrases<br>
+      <span class = "bold">Currently storing the chat's top:</span> {{conversationModel.storedWords.toLocaleString()}} words/phrases
+    </ng-template>
+  </ngb-panel>
+</ngb-accordion>

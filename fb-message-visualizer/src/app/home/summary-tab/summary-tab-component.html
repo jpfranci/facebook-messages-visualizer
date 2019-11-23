@@ -1,34 +1,7 @@
 <div style = "margin: 10px;" *ngFor = "let conversationModel of _messageProvider.availableConversations | async">
-    <ngb-accordion style = "justify-self: start;" #acc="ngbAccordion">
-        <ngb-panel title = {{conversationModel.displayName}} >
-            <ng-template ngbPanelContent>
-                <span style = "font-weight: bold">Total Messages Sent:</span> {{conversationModel.totalMessages.toLocaleString()}} messages<br>
-                <span style = "font-weight: bold">Total Words Sent:</span> {{conversationModel.totalWords.toLocaleString()}} words<br>
-                <div 
-                    *ngIf = "conversationModel.photos !== '{}'">
-                    <span style = "font-weight: bold">Total Photos Sent:</span> {{_getTotalOfDateObject(conversationModel.photos).toLocaleString()}} photos
-                </div>
-                <div 
-                    *ngIf = "conversationModel.stickers !== '{}'">
-                    <span style = "font-weight: bold">Total Stickers Sent:</span> {{_getTotalOfDateObject(conversationModel.stickers).toLocaleString()}} stickers
-                </div>
-                <div 
-                    *ngIf = "_messageProvider.reactionModels | async as reactionModels">
-                    <div *ngIf = "_hasReactions(reactionModels, conversationModel.displayName)">
-                        <span style = "font-weight: bold">Total Reactions On Messages:</span> {{_getTotalOfReactions(reactionModels, conversationModel.displayName).toLocaleString()}} reactions
-                    </div>
-                </div>
-                <div 
-                    *ngIf = "conversationModel.videos !== '{}'">
-                    <span style = "font-weight: bold">Total Videos Sent:</span> {{_getTotalOfDateObject(conversationModel.videos).toLocaleString()}} videos
-                </div>
-                <div 
-                    *ngIf = "conversationModel.gifs !== '{}'">
-                    <span style = "font-weight: bold">Total Gifs Sent:</span> {{_getTotalOfDateObject(conversationModel.gifs).toLocaleString()}} gifs
-                </div>
-                <span style = "font-weight: bold">Unique Words/Phrases up to {{conversationModel.nGrams}} words in length:</span> {{conversationModel.processedWords.toLocaleString()}} words/phrases<br>
-                <span style = "font-weight: bold">Currently storing the chat's top:</span> {{conversationModel.storedWords.toLocaleString()}} words/phrases
-            </ng-template>
-        </ngb-panel>
-    </ngb-accordion>
+  <summaries
+      [conversationModel]="conversationModel"
+      [control] = "_control">
+  </summaries>
+  <chart-modal [control]="_control"></chart-modal>
 </div>

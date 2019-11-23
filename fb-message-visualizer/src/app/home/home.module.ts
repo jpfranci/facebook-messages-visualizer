@@ -25,27 +25,31 @@ import { TotalFilterComponent } from './graph-tab/total-filter-component';
 import { SummaryTabComponent } from './summary-tab/summary-tab-component';
 import { faCalendar, faCalendarAlt, faCog } from '@fortawesome/free-solid-svg-icons';
 import { ChartFilters } from './graph-tab/chart-filters';
+import {SummariesComponent} from "./summary-tab/summaries-component";
+import {ChartModalComponent} from "./summary-tab/chart-modal-component";
 
 
 @NgModule({
   declarations: [
-    HomeComponent, 
-    SearchComponent, 
-    ChartComponent, 
-    DatePickerComponent, 
+    HomeComponent,
+    SearchComponent,
+    ChartComponent,
+    DatePickerComponent,
     FilterParticipantsComponent,
     ChartTypeFilterComponent,
     GroupFilterComponent,
     TotalFilterComponent,
     SummaryTabComponent,
-    ChartFilters
+    ChartFilters,
+    SummariesComponent,
+    ChartModalComponent
   ],
   imports: [
-    CommonModule, 
-    SharedModule, 
-    HomeRoutingModule, 
-    CoreModule, 
-    AlertModule.forRoot(), 
+    CommonModule,
+    SharedModule,
+    HomeRoutingModule,
+    CoreModule,
+    AlertModule.forRoot(),
     NgbModule,
     TabsModule.forRoot(),
     BrowserAnimationsModule,

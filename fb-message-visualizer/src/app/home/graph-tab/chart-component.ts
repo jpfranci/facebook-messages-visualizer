@@ -1,4 +1,4 @@
-import { Component, ViewChild } from "@angular/core";
+import {Component, Input, ViewChild} from "@angular/core";
 import { BaseChartDirective } from "ng2-charts";
 import { MessageFormatterService } from "../../core/services/fb-message-loader/message-formatter-service";
 import { ChartControl } from "../control/chart-control";
@@ -14,6 +14,7 @@ import { ModalDirective } from "ngx-bootstrap";
 export class ChartComponent {
   @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective;
   @ViewChild(ModalDirective, { static: false }) modal: ModalDirective;
+  @Input() isSmall: boolean;
   private _chartControl: ChartControl;
   private _startDate: NgbDateStruct;
   private _endDate: NgbDateStruct;
