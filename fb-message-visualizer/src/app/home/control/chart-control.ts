@@ -8,7 +8,7 @@ export class ChartControl {
     private _startDate: string;
     private _endDate: string;
 
-    constructor(private _messageFormatterService: MessageFormatterService, 
+    constructor(private _messageFormatterService: MessageFormatterService,
                 private _graphMessageProvider: GraphMessageProvider) {}
 
     public get startDate(): Observable<NgbDateStruct> {
@@ -26,11 +26,11 @@ export class ChartControl {
     }
 
     public changeStartDate(startDate: NgbDateStruct) {
-        this._graphMessageProvider.showTimeGraph(this.dateStructToDate(startDate),  this._endDate);
+        this._graphMessageProvider.showGraph(this.dateStructToDate(startDate),  this._endDate);
     }
-    
+
     public changeEndDate(endDate: NgbDateStruct) {
-        this._graphMessageProvider.showTimeGraph(this._startDate, this.dateStructToDate(endDate));
+        this._graphMessageProvider.showGraph(this._startDate, this.dateStructToDate(endDate));
     }
 
     public dateToDateToDateStruct(date: Date): NgbDateStruct {

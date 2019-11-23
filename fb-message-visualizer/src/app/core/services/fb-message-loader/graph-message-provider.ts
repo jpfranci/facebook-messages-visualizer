@@ -64,7 +64,7 @@ export class GraphMessageProvider {
           .subscribe((conversationModels: ConversationModel[]) => {
             const conversationModel = conversationModels[0];
             this._selectedToDisplayObservable.next(conversationModel);
-            this.showTimeGraph();
+            this.showGraph();
           })
     }
 
@@ -110,7 +110,7 @@ export class GraphMessageProvider {
         this._useTotalObservable = new BehaviorSubject<boolean>(true);
         this._startDate = new BehaviorSubject<Date>(new Date());
         this._endDate = new BehaviorSubject<Date>(new Date());
-        this._xAxisDisplayObservable = new BehaviorSubject<string>(XAxisSelectionComponent.TIME_AXIS);
+        this._xAxisDisplayObservable = new BehaviorSubject<string>(GraphMessageProvider.TIME_AXIS);
         this._showTimeOptionsObservable = new BehaviorSubject<boolean>(true);
         this._isTemporaryMode = false;
     }
@@ -128,52 +128,58 @@ export class GraphMessageProvider {
       if (xAxis === GraphMessageProvider.TIME_AXIS) {
         this._showTimeOptionsObservable.next(true);
       } else {
-        this._groupModelObservable.next(GraphMessageProvider.PARTICIPANTS_AXIS);
+        this._groupModelObservable.next(GraphMessageProvider.SEPARATED_BUT_NOT_STACKED);
         this._chartTypeObservable.next('bar');
         this._showTimeOptionsObservable.next(false);
       }
-      this.showTimeGraph();
+      this.showGraph();
     }
 
-    public showTimeGraph(startDate?: string, endDate?: string): void {
-        let participantsToUse: string[] = this._selectedParticipantsObservable.getValue();
-        const model: ConversationModel | WordModel = this._selectedToDisplayObservable.getValue();
-        let chartOptions: ChartOptions = this._chartOptionsObservable.getValue();
-        const startDateToUse = startDate ? startDate: model.startDate;
-        const endDateToUse = endDate ? endDate : model.endDate;
-        let dataSetAndUnit;
+    public showGraph(startDate?: string, endDate?: string): void {
+        if (this._xAxisDisplayObservable.getValue() === GraphMessageProvider.TIME_AXIS) {
+          this._showTimeGraph(startDate, endDate)
+        }
+    }
 
-        if (this._groupModelObservable.getValue().isSeparated) {
-            dataSetAndUnit = this._messageFormatterService.getSeparatedDates(
-                JSON.parse(model.dates),
-                startDateToUse,
-                endDateToUse,
-                this._useTotalObservable.getValue(),
-                chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
-                participantsToUse
-            )
-        } else {
-            dataSetAndUnit = this._messageFormatterService.getTotalDates(
-                JSON.parse(model.dates),
-                startDateToUse,
-                endDateToUse,
-                this._useTotalObservable.getValue(),
-                chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
-                participantsToUse
-            )
-        }
-        this._chartDataset = dataSetAndUnit.dataset;
-        const startText = this._useTotalObservable.getValue() ? "Total" : "";
-        if (model.hasOwnProperty("word")) {
-            chartOptions.title.text = `${startText} Message Count of ${this.capitalizeFirstLetter((<WordModel>model).word)} by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
-        } else {
-            chartOptions.title.text = `${startText} Message Count by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
-        }
-        if (dataSetAndUnit.unit === 'quarter') {
-            dataSetAndUnit.unit = 'month';
-        }
-        chartOptions.scales.xAxes[0].time.unit = <TimeUnit> dataSetAndUnit.unit;
-        this._chartOptionsObservable.next(Object.assign({}, chartOptions));
+    private _showTimeGraph(startDate?: string, endDate?: string): void  {
+      let participantsToUse: string[] = this._selectedParticipantsObservable.getValue();
+      const model: ConversationModel | WordModel = this._selectedToDisplayObservable.getValue();
+      let chartOptions: ChartOptions = this._chartOptionsObservable.getValue();
+      const startDateToUse = startDate ? startDate: model.startDate;
+      const endDateToUse = endDate ? endDate : model.endDate;
+      let dataSetAndUnit;
+
+      if (this._groupModelObservable.getValue().isSeparated) {
+        dataSetAndUnit = this._messageFormatterService.getSeparatedDates(
+          JSON.parse(model.dates),
+          startDateToUse,
+          endDateToUse,
+          this._useTotalObservable.getValue(),
+          chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
+          participantsToUse
+        )
+      } else {
+        dataSetAndUnit = this._messageFormatterService.getTotalDates(
+          JSON.parse(model.dates),
+          startDateToUse,
+          endDateToUse,
+          this._useTotalObservable.getValue(),
+          chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
+          participantsToUse
+        )
+      }
+      this._chartDataset = dataSetAndUnit.dataset;
+      const startText = this._useTotalObservable.getValue() ? "Total" : "";
+      if (model.hasOwnProperty("word")) {
+        chartOptions.title.text = `${startText} Message Count of ${this.capitalizeFirstLetter((<WordModel>model).word)} by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
+      } else {
+        chartOptions.title.text = `${startText} Message Count by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
+      }
+      if (dataSetAndUnit.unit === 'quarter') {
+        dataSetAndUnit.unit = 'month';
+      }
+      chartOptions.scales.xAxes[0].time.unit = <TimeUnit> dataSetAndUnit.unit;
+      this._chartOptionsObservable.next(Object.assign({}, chartOptions));
     }
 
     public set isTemporaryMode(isTemporaryMode){
@@ -236,7 +242,7 @@ export class GraphMessageProvider {
 
     public set chartGroupModel(chartGroupModel: ChartGroupModel) {
         this._groupModelObservable.next(chartGroupModel);
-        this.showTimeGraph();
+        this.showGraph();
     }
 
     public get useTotalObservable(): Observable<boolean> {
@@ -245,7 +251,7 @@ export class GraphMessageProvider {
 
     public set useTotal(useTotal: boolean) {
         this._useTotalObservable.next(useTotal);
-        this.showTimeGraph();
+        this.showGraph();
     }
 
     public get chartTypeObservable(): Observable<string> {
@@ -277,12 +283,12 @@ export class GraphMessageProvider {
 
     public setSelectedParticipants(selectedParticipants: Array<string>): void {
         this._selectedParticipantsObservable.next(selectedParticipants);
-        this.showTimeGraph();
+        this.showGraph();
     }
 
     public set chartType(chartType: ChartType) {
         this._chartTypeObservable.next(chartType);
-        this.showTimeGraph();
+        this.showGraph();
     }
 
     private _initConversationModel(): void {
@@ -309,7 +315,7 @@ export class GraphMessageProvider {
         this._selectedToDisplayObservable.next(wordModel);
         this._startDate.next(new Date(wordModel.startDate));
         this._endDate.next(new Date(wordModel.endDate));
-        this.showTimeGraph();
+        this.showGraph();
     }
 
     private _getStartAndEndDateFromDateObject(dateObject: string): {startDate: string, endDate: string} {
