@@ -56,18 +56,19 @@ export class MessageFormatterService {
       dates: {},
       startDate: string,
       endDate: string,
-      participantsToProcess: string[],
-      label: string
-    ): Array<{data: SingleDataSet, label: string}> {
-      const unitMap = this._populateParticipantsUnitMap(dates, participantsToProcess, startDate, endDate);
-      const participants = Array.from(unitMap.keys());
-      return participants.map((participant) => {
-        return {
-          data: [unitMap.get(participant)],
+      participantsToProcess: string[]
+    ): Map<string, {data: SingleDataSet, label: string}> {
+      const participantsMap: Map<string, number> = this._populateParticipantsUnitMap(dates, participantsToProcess, startDate, endDate);
+      const datasetMap: Map<string, {data: SingleDataSet, label: string}> = new Map();
+      Array.from(participantsMap.keys()).forEach((participant) => {
+        datasetMap.set(participant, {
+          data: [participantsMap.get(participant)],
           label: participant
-        }
+        });
       });
+      return datasetMap;
     }
+
 
 public getSeparatedDates(
         dates: {},
@@ -153,15 +154,15 @@ public getSeparatedDates(
       startDate: string,
       endDate: string
     ): Map<string, number> {
-      const unitMap: Map<string, number> = new Map();
+      const participantsMap: Map<string, number> = new Map();
       participants.forEach((name: string) => {
         if (dates.hasOwnProperty(name)) {
           const datesToUse = this._getDatesBetweenStartAndEnd(Object.keys(dates[name]), startDate, endDate);
           const totalUsage = this._getTotalForParticipant(datesToUse, dates, name);
-          unitMap.set(name, totalUsage);
+          participantsMap.set(name, totalUsage);
         }
       });
-      return unitMap;
+      return participantsMap;
     }
 
     private _getTotalForParticipant(datesToUse: Array<string>, dates: {}, participant: string): number {

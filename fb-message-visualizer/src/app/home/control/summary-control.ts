@@ -45,6 +45,10 @@ export class SummaryControl {
     this._chartModal.show();
   }
 
+  public hideChartModal(): void {
+    this._graphMessageProvider.isTemporaryMode = false;
+  }
+
   public hasReactions(reactionModels: Array<ReactionModel>, displayName: string): boolean {
     return reactionModels.some(reactionModel => reactionModel.displayName === displayName);
   }
@@ -53,6 +57,8 @@ export class SummaryControl {
     this._activeGeneralDate.next(generalDate);
     if (generalDate.type !== SummaryControl.REACTIONS_TYPE) {
       this._graphMessageProvider.changeDateModel(generalDate);
+    } else {
+      this._graphMessageProvider.changeReactionModel(this._reactionModels.getValue()[0])
     }
   }
 
@@ -78,7 +84,6 @@ export class SummaryControl {
         let generalDatesWithReactionModels = generalDatesToDisplay.slice();
         const reactionModelForGeneralDates = {type: SummaryControl.REACTIONS_TYPE, dates: ""};
         generalDatesWithReactionModels.push(reactionModelForGeneralDates);
-        console.log(generalDatesWithReactionModels);
         this._availableGeneralDates.next(generalDatesWithReactionModels);
       }
     })

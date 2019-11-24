@@ -6,12 +6,13 @@ import {
   WordModel,
   ConversationModelConversions,
   ChartGroupModel,
-  DateObjectModel
+  DateObjectModel, ReactionModel
 } from "../../models";
 import { MessageProvider } from "./message-provider";
 import { filter, take, map, tap } from "rxjs/operators";
 import { MessageFormatterService } from "./message-formatter-service";
 import { SingleDataSet } from "ng2-charts";
+import * as Chart from "chart.js";
 
 @Injectable({
     providedIn: 'root'
@@ -19,7 +20,8 @@ import { SingleDataSet } from "ng2-charts";
 export class GraphMessageProvider {
     private _chartDataset: Array<{data: SingleDataSet, label: string}>;
     private _currentConversationObservable: BehaviorSubject<ConversationModel>;
-    private _selectedToDisplayObservable: BehaviorSubject<ConversationModel | WordModel>;
+    private _selectedToDisplayObservable: BehaviorSubject<ConversationModel | WordModel | ReactionModel>;
+    private _labelsObservable: BehaviorSubject<Array<string>>;
     private _dateModel: DateObjectModel;
 
     // Chart Options
@@ -38,14 +40,15 @@ export class GraphMessageProvider {
     private _cachedSettings: {
       chartDataset: Array<{data: SingleDataSet, label: string}>,
       currentConversation: ConversationModel,
-      selectedToDisplay: ConversationModel | WordModel,
+      selectedToDisplay: ConversationModel | WordModel | ReactionModel,
       selectedParticipants: Array<string>,
       chartOptions: ChartOptions,
       chartType: ChartType,
       useTotal: boolean,
       groupModel: ChartGroupModel,
       xAxisDisplay: string,
-      showTimeOptions: boolean
+      showTimeOptions: boolean,
+      labels: Array<string>
     };
 
     public static NOT_SEPARATED_NOR_STACKED: ChartGroupModel = {
@@ -76,12 +79,11 @@ export class GraphMessageProvider {
           })
     }
 
-    private _initChartOptions(): ChartOptions {
+    private _initTimeChartOptions(): ChartOptions {
         return {
             responsive: true,
             title: {
                 display: true,
-                text: "Message Count by Month",
                 fontSize: 15
             },
             maintainAspectRatio: false,
@@ -107,12 +109,63 @@ export class GraphMessageProvider {
         }
     }
 
+    private _initParticipantsChartOptions(): ChartOptions {
+      return {
+        responsive: true,
+        title: {
+          display: true,
+          fontSize: 15
+        },
+        maintainAspectRatio: false,
+        scales: {
+          xAxes: [{
+            type: "category",
+            distribution: "linear",
+          }],
+          yAxes: [{
+            display: true,
+            position: 'left',
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        },
+        // from https://github.com/jtblin/angular-chart.js/issues/605
+        tooltips: {
+          enabled: true
+        },
+        hover: {
+          animationDuration: 1
+        },
+        animation: {
+          duration: 1,
+          onComplete: function () {
+            const chartInstance = this.chart;
+            const ctx = chartInstance.ctx;
+            ctx.textAlign = 'center';
+            ctx.font = Chart.helpers.fontString(12, 'normal', Chart.defaults.global.defaultFontFamily);
+            ctx.fillStyle = "rgba(0, 0, 0, 1)";
+            ctx.textBaseline = 'bottom';
+
+            this.data.datasets.forEach(function (dataset, i) {
+              const meta = chartInstance.controller.getDatasetMeta(i);
+              meta.data.forEach(function (bar, index) {
+                const data = dataset.data[index];
+                ctx.fillText(data, bar._model.x, bar._model.y - 5);
+              });
+            });
+          }
+        }
+      }
+    }
+
     private _initSubjects(): void {
         this._chartDataset = [{data: [], label: ""}];
-        this._chartOptionsObservable = new BehaviorSubject<ChartOptions>(this._initChartOptions());
+        this._labelsObservable = new BehaviorSubject<Array<string>>([]);
+        this._chartOptionsObservable = new BehaviorSubject<ChartOptions>(this._initTimeChartOptions());
         this._currentConversationObservable = new BehaviorSubject<ConversationModel>(undefined);
         this._selectedParticipantsObservable = new BehaviorSubject<Array<string>>([]);
-        this._selectedToDisplayObservable = new BehaviorSubject<ConversationModel | WordModel>(undefined);
+        this._selectedToDisplayObservable = new BehaviorSubject<ConversationModel | WordModel | ReactionModel>(undefined);
         this._chartTypeObservable = new BehaviorSubject<ChartType>('line');
         this._groupModelObservable = new BehaviorSubject<ChartGroupModel>(GraphMessageProvider.NOT_SEPARATED_NOR_STACKED);
         this._useTotalObservable = new BehaviorSubject<boolean>(true);
@@ -132,7 +185,31 @@ export class GraphMessageProvider {
     }
 
     private _showParticipantGraph(startDate?: string, endDate?: string): void {
+      let participantsToUse: string[] = this._selectedParticipantsObservable.getValue();
+      const dateModelAndDates = this._getModelAndDatesToUse(startDate, endDate);
+      const chartOptions = this._chartOptionsObservable.getValue();
+      const datasetMap = this._messageFormatterService.getDatasetForParticipants(
+        JSON.parse(dateModelAndDates.dates),
+          dateModelAndDates.startDate,
+          dateModelAndDates.endDate,
+          participantsToUse
+      );
+      this._setDatasetAndLabels(datasetMap);
+      this._setHeader(chartOptions, dateModelAndDates);
+      this._changeChartOptions(chartOptions);
+    }
 
+    private _setDatasetAndLabels(dataSetMap: Map<string, {data: SingleDataSet, label: string}>): void {
+      let datasetToUse: SingleDataSet = [];
+      let labelsToUse: Array<string> = [];
+      Array.from(dataSetMap.entries()).forEach((participantAndData) => {
+        const dataToPush = participantAndData[1].data;
+        // @ts-ignore
+        datasetToUse.push(...dataToPush);
+        labelsToUse.push(participantAndData[0]);
+      });
+      this._chartDataset = [{data: datasetToUse, label: "Total"}];
+      this._labelsObservable.next(labelsToUse);
     }
 
     private _showTimeGraph(startDate?: string, endDate?: string): void  {
@@ -161,20 +238,29 @@ export class GraphMessageProvider {
         )
       }
       this._chartDataset = dataSetAndUnit.dataset;
-      this._setHeader(chartOptions, dataSetAndUnit.unit, dateModelAndDates);
+      this._setHeader(chartOptions, dateModelAndDates, dataSetAndUnit.unit);
       chartOptions.scales.xAxes[0].time.unit = <TimeUnit> dataSetAndUnit.unit;
+      this._changeChartOptions(chartOptions);
+    }
+
+    private _changeChartOptions(chartOptions: ChartOptions): void {
       this._chartOptionsObservable.next(Object.assign({}, chartOptions));
     }
 
     private _setHeader(chartOptions: ChartOptions,
-                       unit: string,
-                       dateModelAndDates: {dates: string, model: any, startDate: string, endDate: string, header: string}): void {
+                       dateModelAndDates: {dates: string, model: any, startDate: string, endDate: string, header: string},
+                       timeUnit?: string): void {
       const conversationModel = this._currentConversationObservable.getValue();
       const startText = this._useTotalObservable.getValue() ? "Total" : "";
-      if (dateModelAndDates.model && dateModelAndDates.model.hasOwnProperty("word")) {
-        chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count of ${this.capitalizeFirstLetter((<WordModel>dateModelAndDates.model).word)} by ${this.capitalizeFirstLetter(unit)} for Chat with ${conversationModel.displayName}`;
+      const unitToUse = timeUnit ? timeUnit : "Participants";
+      if (dateModelAndDates.model) {
+        if (dateModelAndDates.model.hasOwnProperty("word")) {
+          chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count of ${this.capitalizeFirstLetter((<WordModel>dateModelAndDates.model).word)} by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
+        } else if (dateModelAndDates.model.hasOwnProperty('reaction')) {
+          chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count of ${this.capitalizeFirstLetter((<ReactionModel>dateModelAndDates.model).reaction)} by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
+        }
       } else {
-        chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count by ${this.capitalizeFirstLetter(unit)} for Chat with ${conversationModel.displayName}`;
+        chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
       }
     }
 
@@ -186,7 +272,6 @@ export class GraphMessageProvider {
       let endDateToUse;
       let header;
       if (this._dateModel) {
-        modelToUse = dates;
         dates = this._dateModel.dates;
         header = this._dateModel.type;
         startDateToUse = startDate ? startDate: this._startDate.getValue();
@@ -218,10 +303,13 @@ export class GraphMessageProvider {
     public changeXAxis(xAxis: string): void {
       this._xAxisDisplayObservable.next(xAxis);
       if (xAxis === GraphMessageProvider.TIME_AXIS) {
+        this._chartOptionsObservable.next(this._initTimeChartOptions());
+        this._labelsObservable.next([]);
         this._showTimeOptionsObservable.next(true);
       } else {
         this._groupModelObservable.next(GraphMessageProvider.SEPARATED_BUT_NOT_STACKED);
         this._chartTypeObservable.next('bar');
+        this._chartOptionsObservable.next(this._initParticipantsChartOptions());
         this._showTimeOptionsObservable.next(false);
       }
       this.showGraph();
@@ -229,12 +317,10 @@ export class GraphMessageProvider {
 
 
   public set isTemporaryMode(isTemporaryMode){
-      if (this._isTemporaryMode !== isTemporaryMode) {
-        if (isTemporaryMode) {
-          this._cacheSettings();
-        } else {
-          this._loadCachedSettings();
-        }
+      if (isTemporaryMode) {
+        this._cacheSettings();
+      } else {
+        this._loadCachedSettings();
       }
     }
 
@@ -249,23 +335,28 @@ export class GraphMessageProvider {
         useTotal: this._useTotalObservable.getValue(),
         groupModel: this._groupModelObservable.getValue(),
         xAxisDisplay: this._xAxisDisplayObservable.getValue(),
-        showTimeOptions: this._showTimeOptionsObservable.getValue()
+        showTimeOptions: this._showTimeOptionsObservable.getValue(),
+        labels: this._labelsObservable.getValue()
       }
     }
 
     private _loadCachedSettings(): void {
-      this._chartDataset = this._cachedSettings.chartDataset;
-      this._currentConversationObservable.next(this._cachedSettings.currentConversation);
-      this._selectedToDisplayObservable.next(this._cachedSettings.selectedToDisplay);
-      this._selectedParticipantsObservable.next(this._cachedSettings.selectedParticipants);
-      this._chartOptionsObservable.next(this._cachedSettings.chartOptions);
-      this._chartTypeObservable.next(this._cachedSettings.chartType);
-      this._useTotalObservable.next(this._cachedSettings.useTotal);
-      this._groupModelObservable.next(this._cachedSettings.groupModel);
-      this._xAxisDisplayObservable.next(this._cachedSettings.xAxisDisplay);
-      this._showTimeOptionsObservable.next(this._cachedSettings.showTimeOptions);
-      this._cachedSettings = undefined;
-      this._dateModel = undefined;
+      if (this._cachedSettings !== undefined) {
+        this._chartDataset = this._cachedSettings.chartDataset;
+        this._currentConversationObservable.next(this._cachedSettings.currentConversation);
+        this._selectedToDisplayObservable.next(this._cachedSettings.selectedToDisplay);
+        this._selectedParticipantsObservable.next(this._cachedSettings.selectedParticipants);
+        this._chartOptionsObservable.next(this._cachedSettings.chartOptions);
+        this._chartTypeObservable.next(this._cachedSettings.chartType);
+        this._useTotalObservable.next(this._cachedSettings.useTotal);
+        this._groupModelObservable.next(this._cachedSettings.groupModel);
+        this._xAxisDisplayObservable.next(this._cachedSettings.xAxisDisplay);
+        this._showTimeOptionsObservable.next(this._cachedSettings.showTimeOptions);
+        this._labelsObservable.next(this._cachedSettings.labels);
+        this._cachedSettings = undefined;
+        this._resetDateModel();
+        this.showGraph();
+      }
     }
 
     private capitalizeFirstLetter(str: string): string {
@@ -343,6 +434,10 @@ export class GraphMessageProvider {
         this.showGraph();
     }
 
+    public get labelsObservable() {
+      return this._labelsObservable;
+    }
+
     private _initConversationModel(): void {
         this._messageProvider.availableConversations.pipe(
             filter((availableConversations: ConversationModel[]) => availableConversations.length > 0),
@@ -369,6 +464,18 @@ export class GraphMessageProvider {
       this._endDate.next(new Date(dates.endDate));
       this._dateModel = dateModel;
       this.showGraph();
+    }
+
+    public changeReactionModel(reactionModel: ReactionModel): void {
+      this._resetDateModel();
+      this._startDate.next(new Date(reactionModel.startDate));
+      this._endDate.next(new Date(reactionModel.endDate));
+      this._selectedToDisplayObservable.next(reactionModel);
+      this.showGraph();
+    }
+
+    private _resetDateModel(): void {
+      this._dateModel = undefined;
     }
 
     public changeWord(wordModel: WordModel): void {
