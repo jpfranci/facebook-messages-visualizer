@@ -144,7 +144,7 @@ export class GraphMessageProvider {
             const ctx = chartInstance.ctx;
             ctx.textAlign = 'center';
             ctx.font = Chart.helpers.fontString(12, 'normal', Chart.defaults.global.defaultFontFamily);
-            ctx.fillStyle = "rgba(0, 0, 0, 1)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
             ctx.textBaseline = 'bottom';
 
             this.data.datasets.forEach(function (dataset, i) {
@@ -253,14 +253,12 @@ export class GraphMessageProvider {
       const conversationModel = this._currentConversationObservable.getValue();
       const startText = this._useTotalObservable.getValue() ? "Total" : "";
       const unitToUse = timeUnit ? timeUnit : "Participants";
-      if (dateModelAndDates.model) {
-        if (dateModelAndDates.model.hasOwnProperty("word")) {
-          chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count of ${this.capitalizeFirstLetter((<WordModel>dateModelAndDates.model).word)} by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
-        } else if (dateModelAndDates.model.hasOwnProperty('reaction')) {
-          chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count of ${this.capitalizeFirstLetter((<ReactionModel>dateModelAndDates.model).reaction)} by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
-        }
+      if (dateModelAndDates.model && dateModelAndDates.model.hasOwnProperty("word")) {
+        chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count of ${this.capitalizeFirstLetter((<WordModel>dateModelAndDates.model).word)} by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
+      } else if (dateModelAndDates.model && dateModelAndDates.model.hasOwnProperty('reaction')) {
+        chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count of ${this.capitalizeFirstLetter((<ReactionModel>dateModelAndDates.model).reaction)} by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
       } else {
-        chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
+      chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
       }
     }
 

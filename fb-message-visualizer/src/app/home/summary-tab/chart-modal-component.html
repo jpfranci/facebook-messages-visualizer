@@ -14,7 +14,10 @@
         </button>
       </div>
       <div class="modal-body">
-        <select-date-type [control]="control"></select-date-type>
+        <div class = "select-container">
+          <select-date-type class = "select-item" [control]="control"></select-date-type>
+          <reaction-picker class = "select-item" [control]="control"></reaction-picker>
+        </div>
         <chart-component [isSmall]="true"></chart-component>
       </div>
     </div>

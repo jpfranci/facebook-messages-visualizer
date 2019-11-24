@@ -9,6 +9,7 @@ export class SummaryControl {
   private _availableGeneralDates: BehaviorSubject<Array<DateObjectModel>>;
   private _reactionModels: BehaviorSubject<Array<ReactionModel>>;
   private _activeGeneralDate: BehaviorSubject<DateObjectModel>;
+  private _selectedReaction: ReactionModel;
 
   public static MESSAGE_TYPE = "Message";
   public static PHOTOS_TYPE = "Photo";
@@ -25,6 +26,18 @@ export class SummaryControl {
     this._reactionModels = new BehaviorSubject<Array<ReactionModel>>([]);
   }
 
+  public get reactionType(): string {
+    return SummaryControl.REACTIONS_TYPE;
+  }
+
+  public get selectedReaction(): ReactionModel {
+    return this._selectedReaction;
+  }
+
+  public get reactionModels(): Observable<Array<ReactionModel>> {
+    return this._reactionModels;
+  }
+
   public get activeGeneralDate(): Observable<DateObjectModel> {
     return this._activeGeneralDate;
   }
@@ -37,6 +50,11 @@ export class SummaryControl {
     this._chartModal = chartModal;
   }
 
+  public set selectedReaction(reactionModel: ReactionModel) {
+    this._selectedReaction = reactionModel;
+    this._graphMessageProvider.changeReactionModel(reactionModel);
+  }
+
   public showChartModal(conversationModel: ConversationModel): void {
     this._conversationModel.next(conversationModel);
     this._calculateAvailableGeneralDates(conversationModel);
@@ -47,6 +65,7 @@ export class SummaryControl {
 
   public hideChartModal(): void {
     this._graphMessageProvider.isTemporaryMode = false;
+    this._selectedReaction = undefined;
   }
 
   public hasReactions(reactionModels: Array<ReactionModel>, displayName: string): boolean {
@@ -58,8 +77,44 @@ export class SummaryControl {
     if (generalDate.type !== SummaryControl.REACTIONS_TYPE) {
       this._graphMessageProvider.changeDateModel(generalDate);
     } else {
-      this._graphMessageProvider.changeReactionModel(this._reactionModels.getValue()[0])
+      if (this._selectedReaction) {
+        this._graphMessageProvider.changeReactionModel(this._selectedReaction)
+      } else {
+        this._graphMessageProvider.changeDateModel(this._mergeReactionsModelsToDateObject());
+      }
     }
+  }
+
+  private _mergeReactionsModelsToDateObject(): DateObjectModel {
+    let mergedDateObject = {};
+    const reactionModels = this._reactionModels.getValue();
+    if (reactionModels.length > 0) {
+      reactionModels.forEach((reactionModel) => {
+        const dates = JSON.parse(reactionModel.dates);
+        const participants = Object.keys(dates);
+        participants.forEach((participant) => {
+          if (!mergedDateObject.hasOwnProperty(participant)) {
+            mergedDateObject[participant] = dates[participant];
+          } else {
+            this._mergeDates(mergedDateObject, dates[participant], participant);
+          }
+        })
+      });
+    }
+    console.log(mergedDateObject);
+    return {dates: JSON.stringify(mergedDateObject), type: "Reactions"};
+  }
+
+  private _mergeDates(mergedDataObject: {}, dates: {}, participant: string): void {
+    let objectToAlter = mergedDataObject[participant];
+    const datesArray = Object.keys(dates);
+    datesArray.forEach((date) => {
+      if (!objectToAlter.hasOwnProperty(date)) {
+        objectToAlter[date] = dates[date];
+      } else {
+        objectToAlter[date] = dates[date] + objectToAlter[date];
+      }
+    })
   }
 
   private _extractReactionsForModel(reactionModels: Array<ReactionModel>, displayName: string): Array<ReactionModel> {

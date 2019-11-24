@@ -1,0 +1,20 @@
+<div *ngIf = "this.control.activeGeneralDate | async as activeGeneralDate">
+  <div
+    *ngIf="activeGeneralDate.type === this.control.reactionType"
+    class="btn-group dropdown"
+    dropdown
+    [autoClose] = "true">
+    <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+            aria-controls="dropdown-animated">
+      {{ _getSelectedDisplayString() }}
+    </button>
+    <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
+        role="menu" aria-labelledby="button-animated">
+      <li role = "menuitem" *ngFor = "let reactionModel of this.control.reactionModels | async">
+        <a class = "dropdown-item" href="#" (click) = "this.control.selectedReaction = reactionModel">
+          {{ reactionModel.reaction }}
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
