@@ -1,12 +1,17 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ChartOptions, ChartType, TimeUnit } from "chart.js";
-import { ConversationModel, WordModel, ConversationModelConversions, ChartGroupModel } from "../../models";
+import {
+  ConversationModel,
+  WordModel,
+  ConversationModelConversions,
+  ChartGroupModel,
+  DateObjectModel
+} from "../../models";
 import { MessageProvider } from "./message-provider";
 import { filter, take, map, tap } from "rxjs/operators";
 import { MessageFormatterService } from "./message-formatter-service";
 import { SingleDataSet } from "ng2-charts";
-import {XAxisSelectionComponent} from "../../../home/graph-tab/x-axis-selection-component";
 
 @Injectable({
     providedIn: 'root'
@@ -15,6 +20,7 @@ export class GraphMessageProvider {
     private _chartDataset: Array<{data: SingleDataSet, label: string}>;
     private _currentConversationObservable: BehaviorSubject<ConversationModel>;
     private _selectedToDisplayObservable: BehaviorSubject<ConversationModel | WordModel>;
+    private _dateModel: DateObjectModel;
 
     // Chart Options
     private _selectedParticipantsObservable: BehaviorSubject<Array<string>>;
@@ -30,14 +36,16 @@ export class GraphMessageProvider {
 
     private _isTemporaryMode: boolean;
     private _cachedSettings: {
-      chartDataset: any,
-      currentConversation: any,
-      selectedToDisplay: any,
-      selectedParticipants: any,
-      chartOptions: any,
-      chartType: any,
-      useTotal: any,
-      groupModel: any
+      chartDataset: Array<{data: SingleDataSet, label: string}>,
+      currentConversation: ConversationModel,
+      selectedToDisplay: ConversationModel | WordModel,
+      selectedParticipants: Array<string>,
+      chartOptions: ChartOptions,
+      chartType: ChartType,
+      useTotal: boolean,
+      groupModel: ChartGroupModel,
+      xAxisDisplay: string,
+      showTimeOptions: boolean
     };
 
     public static NOT_SEPARATED_NOR_STACKED: ChartGroupModel = {
@@ -115,6 +123,90 @@ export class GraphMessageProvider {
         this._isTemporaryMode = false;
     }
 
+    public showGraph(startDate?: string, endDate?: string): void {
+        if (this._xAxisDisplayObservable.getValue() === GraphMessageProvider.TIME_AXIS) {
+          this._showTimeGraph(startDate, endDate);
+        } else {
+          this._showParticipantGraph(startDate, endDate);
+        }
+    }
+
+    private _showParticipantGraph(startDate?: string, endDate?: string): void {
+
+    }
+
+    private _showTimeGraph(startDate?: string, endDate?: string): void  {
+      let participantsToUse: string[] = this._selectedParticipantsObservable.getValue();
+      const dateModelAndDates = this._getModelAndDatesToUse(startDate, endDate);
+      const chartOptions = this._chartOptionsObservable.getValue();
+      let dataSetAndUnit;
+
+      if (this._groupModelObservable.getValue().isSeparated) {
+        dataSetAndUnit = this._messageFormatterService.getSeparatedDates(
+          JSON.parse(dateModelAndDates.dates),
+          dateModelAndDates.startDate,
+          dateModelAndDates.endDate,
+          this._useTotalObservable.getValue(),
+          chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
+          participantsToUse
+        )
+      } else {
+        dataSetAndUnit = this._messageFormatterService.getTotalDates(
+          JSON.parse(dateModelAndDates.dates),
+          dateModelAndDates.startDate,
+          dateModelAndDates.endDate,
+          this._useTotalObservable.getValue(),
+          chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
+          participantsToUse
+        )
+      }
+      this._chartDataset = dataSetAndUnit.dataset;
+      this._setHeader(chartOptions, dataSetAndUnit.unit, dateModelAndDates);
+      chartOptions.scales.xAxes[0].time.unit = <TimeUnit> dataSetAndUnit.unit;
+      this._chartOptionsObservable.next(Object.assign({}, chartOptions));
+    }
+
+    private _setHeader(chartOptions: ChartOptions,
+                       unit: string,
+                       dateModelAndDates: {dates: string, model: any, startDate: string, endDate: string, header: string}): void {
+      const conversationModel = this._currentConversationObservable.getValue();
+      const startText = this._useTotalObservable.getValue() ? "Total" : "";
+      if (dateModelAndDates.model && dateModelAndDates.model.hasOwnProperty("word")) {
+        chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count of ${this.capitalizeFirstLetter((<WordModel>dateModelAndDates.model).word)} by ${this.capitalizeFirstLetter(unit)} for Chat with ${conversationModel.displayName}`;
+      } else {
+        chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count by ${this.capitalizeFirstLetter(unit)} for Chat with ${conversationModel.displayName}`;
+      }
+    }
+
+    private _getModelAndDatesToUse(startDate?: string, endDate?: string):
+      {dates: string, model: any, startDate: string, endDate: string, header: string} {
+      let dates;
+      let modelToUse;
+      let startDateToUse;
+      let endDateToUse;
+      let header;
+      if (this._dateModel) {
+        modelToUse = dates;
+        dates = this._dateModel.dates;
+        header = this._dateModel.type;
+        startDateToUse = startDate ? startDate: this._startDate.getValue();
+        endDateToUse = endDate ? endDate : this._endDate.getValue();
+      } else {
+        modelToUse = this._selectedToDisplayObservable.getValue();
+        dates = this._selectedToDisplayObservable.getValue().dates;
+        header = "Message";
+        startDateToUse = startDate ? startDate: modelToUse.startDate;
+        endDateToUse = endDate ? endDate : modelToUse.endDate;
+      }
+      return {
+        dates: dates,
+        model: modelToUse,
+        startDate: startDateToUse,
+        endDate: endDateToUse,
+        header: header
+      }
+    }
+
     public get showTimeOptionsObservable(): Observable<boolean> {
       return this._showTimeOptionsObservable;
     }
@@ -124,7 +216,7 @@ export class GraphMessageProvider {
     }
 
     public changeXAxis(xAxis: string): void {
-      this._xAxisDisplayObservable.next(xAxis)
+      this._xAxisDisplayObservable.next(xAxis);
       if (xAxis === GraphMessageProvider.TIME_AXIS) {
         this._showTimeOptionsObservable.next(true);
       } else {
@@ -135,54 +227,8 @@ export class GraphMessageProvider {
       this.showGraph();
     }
 
-    public showGraph(startDate?: string, endDate?: string): void {
-        if (this._xAxisDisplayObservable.getValue() === GraphMessageProvider.TIME_AXIS) {
-          this._showTimeGraph(startDate, endDate)
-        }
-    }
 
-    private _showTimeGraph(startDate?: string, endDate?: string): void  {
-      let participantsToUse: string[] = this._selectedParticipantsObservable.getValue();
-      const model: ConversationModel | WordModel = this._selectedToDisplayObservable.getValue();
-      let chartOptions: ChartOptions = this._chartOptionsObservable.getValue();
-      const startDateToUse = startDate ? startDate: model.startDate;
-      const endDateToUse = endDate ? endDate : model.endDate;
-      let dataSetAndUnit;
-
-      if (this._groupModelObservable.getValue().isSeparated) {
-        dataSetAndUnit = this._messageFormatterService.getSeparatedDates(
-          JSON.parse(model.dates),
-          startDateToUse,
-          endDateToUse,
-          this._useTotalObservable.getValue(),
-          chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
-          participantsToUse
-        )
-      } else {
-        dataSetAndUnit = this._messageFormatterService.getTotalDates(
-          JSON.parse(model.dates),
-          startDateToUse,
-          endDateToUse,
-          this._useTotalObservable.getValue(),
-          chartOptions.scales.xAxes[0].ticks.maxTicksLimit,
-          participantsToUse
-        )
-      }
-      this._chartDataset = dataSetAndUnit.dataset;
-      const startText = this._useTotalObservable.getValue() ? "Total" : "";
-      if (model.hasOwnProperty("word")) {
-        chartOptions.title.text = `${startText} Message Count of ${this.capitalizeFirstLetter((<WordModel>model).word)} by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
-      } else {
-        chartOptions.title.text = `${startText} Message Count by ${this.capitalizeFirstLetter(dataSetAndUnit.unit)} for Chat with ${model.displayName}`;
-      }
-      if (dataSetAndUnit.unit === 'quarter') {
-        dataSetAndUnit.unit = 'month';
-      }
-      chartOptions.scales.xAxes[0].time.unit = <TimeUnit> dataSetAndUnit.unit;
-      this._chartOptionsObservable.next(Object.assign({}, chartOptions));
-    }
-
-    public set isTemporaryMode(isTemporaryMode){
+  public set isTemporaryMode(isTemporaryMode){
       if (this._isTemporaryMode !== isTemporaryMode) {
         if (isTemporaryMode) {
           this._cacheSettings();
@@ -201,7 +247,9 @@ export class GraphMessageProvider {
         chartOptions: this._chartOptionsObservable.getValue(),
         chartType: this._chartTypeObservable.getValue(),
         useTotal: this._useTotalObservable.getValue(),
-        groupModel: this._groupModelObservable.getValue()
+        groupModel: this._groupModelObservable.getValue(),
+        xAxisDisplay: this._xAxisDisplayObservable.getValue(),
+        showTimeOptions: this._showTimeOptionsObservable.getValue()
       }
     }
 
@@ -214,6 +262,10 @@ export class GraphMessageProvider {
       this._chartTypeObservable.next(this._cachedSettings.chartType);
       this._useTotalObservable.next(this._cachedSettings.useTotal);
       this._groupModelObservable.next(this._cachedSettings.groupModel);
+      this._xAxisDisplayObservable.next(this._cachedSettings.xAxisDisplay);
+      this._showTimeOptionsObservable.next(this._cachedSettings.showTimeOptions);
+      this._cachedSettings = undefined;
+      this._dateModel = undefined;
     }
 
     private capitalizeFirstLetter(str: string): string {
@@ -308,8 +360,16 @@ export class GraphMessageProvider {
         this._endDate.next(new Date(conversationModel.endDate));
         this._selectedToDisplayObservable.next(conversationModel);
         this._selectedParticipantsObservable.next(ConversationModelConversions.toParticipantsArray(conversationModel));
+        this.showGraph();
     }
 
+    public changeDateModel(dateModel: DateObjectModel): void {
+      const dates = this._getStartAndEndDateFromDateObject(dateModel.dates);
+      this._startDate.next(new Date(dates.startDate));
+      this._endDate.next(new Date(dates.endDate));
+      this._dateModel = dateModel;
+      this.showGraph();
+    }
 
     public changeWord(wordModel: WordModel): void {
         this._selectedToDisplayObservable.next(wordModel);
@@ -319,17 +379,17 @@ export class GraphMessageProvider {
     }
 
     private _getStartAndEndDateFromDateObject(dateObject: string): {startDate: string, endDate: string} {
-      const participants = Object.keys(JSON.parse(dateObject));
-      let allDates: Set<string> = new Set();
+      const parsedDateObject = JSON.parse(dateObject);
+      const participants = Object.keys(parsedDateObject);
+      let allDates: Set<number> = new Set();
+      const allDatesArray: Array<number> = [];
       participants.forEach((participant) => {
-        const dates = Object.keys(dateObject[participant]);
-        dates.forEach((date) => allDates.add(date));
+        const dates = Object.keys(parsedDateObject[participant]);
+        dates.forEach((date) => allDatesArray.push(new Date(date).getTime()));
       });
-      const sortedDates: Array<string> = Array.from(allDates).sort(
-        (a: string, b: string) => new Date(a).getMilliseconds() - new Date(b).getMilliseconds());
       return {
-        startDate: sortedDates.length > 0 ? sortedDates[0] : Date.now().toString(),
-        endDate: sortedDates.length > 0 ? sortedDates[sortedDates.length - 1] : Date.now().toString()
+        startDate: allDatesArray.length > 0 ? new Date(Math.min(...allDatesArray)).toString() : Date.now().toString(),
+        endDate: allDatesArray.length > 0 ? new Date(Math.max(...allDatesArray)).toString() : Date.now().toString()
       };
     }
 }

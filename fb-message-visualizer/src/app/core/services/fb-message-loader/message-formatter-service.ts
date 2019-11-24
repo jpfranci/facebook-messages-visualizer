@@ -52,7 +52,24 @@ export class MessageFormatterService {
         toDate: (unitString: string) => new Date(unitString)
     };
 
-    public getSeparatedDates(
+    public getDatasetForParticipants(
+      dates: {},
+      startDate: string,
+      endDate: string,
+      participantsToProcess: string[],
+      label: string
+    ): Array<{data: SingleDataSet, label: string}> {
+      const unitMap = this._populateParticipantsUnitMap(dates, participantsToProcess, startDate, endDate);
+      const participants = Array.from(unitMap.keys());
+      return participants.map((participant) => {
+        return {
+          data: [unitMap.get(participant)],
+          label: participant
+        }
+      });
+    }
+
+public getSeparatedDates(
         dates: {},
         startDate: string,
         endDate: string,
@@ -66,7 +83,7 @@ export class MessageFormatterService {
         const unitMapsWithLabels: Array<{unitMap: Map<string, number>, label: string}> =
             participantsToProcess.map((participant: string) => {
                 return {
-                    unitMap: this._populateUnitMap([participant], formatter, dates, startDate, endDate),
+                    unitMap: this._populateDateUnitMap([participant], formatter, dates, startDate, endDate),
                     label: participant
                 };
             });
@@ -96,7 +113,7 @@ export class MessageFormatterService {
         unit: string
     } {
         const formatter: UnitFormatter = this._getUnitFormatters(startDate, endDate, numberOfTicks);
-        const unitMap: Map<string, number> = this._populateUnitMap(participantsToProcess, formatter, dates, startDate, endDate);
+        const unitMap: Map<string, number> = this._populateDateUnitMap(participantsToProcess, formatter, dates, startDate, endDate);
         const totalDates: Array<ChartPoint> = this._populateDataSet(unitMap, formatter, useTotal);
         return {dataset: [{data: totalDates, label: 'Total'}], unit: formatter.unit};
     }
@@ -130,7 +147,30 @@ export class MessageFormatterService {
         return totalDates;
     }
 
-    private _populateUnitMap(
+    private _populateParticipantsUnitMap(
+      dates: {},
+      participants: string[],
+      startDate: string,
+      endDate: string
+    ): Map<string, number> {
+      const unitMap: Map<string, number> = new Map();
+      participants.forEach((name: string) => {
+        if (dates.hasOwnProperty(name)) {
+          const datesToUse = this._getDatesBetweenStartAndEnd(Object.keys(dates[name]), startDate, endDate);
+          const totalUsage = this._getTotalForParticipant(datesToUse, dates, name);
+          unitMap.set(name, totalUsage);
+        }
+      });
+      return unitMap;
+    }
+
+    private _getTotalForParticipant(datesToUse: Array<string>, dates: {}, participant: string): number {
+      return datesToUse.reduce((accum: number, dateToUse: string) => {
+        return accum + dates[participant][dateToUse];
+      }, 0)
+    }
+
+    private _populateDateUnitMap(
         participants: string[],
         formatter: UnitFormatter,
         dates: {},
@@ -139,24 +179,27 @@ export class MessageFormatterService {
             const unitMap: Map<string, number> = new Map();
             participants.forEach((name: string) => {
                 if (dates.hasOwnProperty(name)) {
-                    let datesUsed: Array<string> = Object.keys(dates[name]);
-                    datesUsed = datesUsed.filter((dateString: string) => {
-                        return moment(dateString).isBetween(startDate, endDate, null, "[]");
-                    });
+                    const datesUsed = this._getDatesBetweenStartAndEnd(Object.keys(dates[name]), startDate, endDate);
                     const datesUsedGroupedByUnits: object = _.groupBy(datesUsed, formatter.groupByFunction);
                     const units = Object.keys(datesUsedGroupedByUnits);
                     units.forEach((unit: string) => {
-                    const allTimesInMonth: number = datesUsedGroupedByUnits[unit].reduce(
-                        (accum: number, dateString: string) => {
-                            return accum + dates[name][dateString]
-                    }, 0);
-                    let numberOfTimesUsed: number = unitMap.get(unit);
-                    numberOfTimesUsed = numberOfTimesUsed ? numberOfTimesUsed : 0;
-                    unitMap.set(unit, numberOfTimesUsed + allTimesInMonth);
+                      const allTimesInMonth: number = datesUsedGroupedByUnits[unit].reduce(
+                          (accum: number, dateString: string) => {
+                              return accum + dates[name][dateString]
+                      }, 0);
+                      let numberOfTimesUsed: number = unitMap.get(unit);
+                      numberOfTimesUsed = numberOfTimesUsed ? numberOfTimesUsed : 0;
+                      unitMap.set(unit, numberOfTimesUsed + allTimesInMonth);
                     });
                 }
             });
             return unitMap;
+    }
+
+    private _getDatesBetweenStartAndEnd(dates: Array<string>, startDate: string, endDate: string): Array<string> {
+      return dates.filter((dateString: string) => {
+        return moment(dateString).isBetween(startDate, endDate, null, "[]");
+      });
     }
 
     private _getSortedUnits(unitMap: Map<string, number>, formatter: UnitFormatter): string[] {
