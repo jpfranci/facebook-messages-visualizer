@@ -3,8 +3,7 @@ import {SummaryControl} from "../control/summary-control";
 
 @Component({
   selector: 'reaction-picker',
-  templateUrl: './reaction-picker-component.html',
- // styleUrls: ['./chart-modal-component.scss']
+  templateUrl: './reaction-picker-component.html'
 })
 export class ReactionPickerComponent {
   @Input() control: SummaryControl;

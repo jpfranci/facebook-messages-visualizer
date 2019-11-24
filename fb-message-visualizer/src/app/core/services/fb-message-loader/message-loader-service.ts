@@ -10,7 +10,6 @@ import { WordModel } from '../../models/word-model';
 import { NgxSpinnerService } from "ngx-spinner";
 import { ConversationModel } from '../../models/conversation-model';
 import { MessageProvider } from './message-provider';
-import { Message } from '@angular/compiler/src/i18n/i18n_ast';
 import { ReactionModel } from '../../models';
 var iconv = require('iconv-lite');
 
@@ -45,7 +44,7 @@ export class MessageLoaderService {
         let files = remote.dialog.showOpenDialog({
             properties: ['openFile'],
             filters: [{name: 'Messages', extensions: ['json']}]
-          })
+          });
         if (files && files.length > 0) {
             this._spinner.show();
             const callback = bindNodeCallback(fs.readFile);

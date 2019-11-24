@@ -24,6 +24,12 @@
                 <group-filter class = "dropdown"></group-filter>
                 <total-filter class = "dropdown"></total-filter>
                 <x-axis-selection class = "dropdown"></x-axis-selection>
+                <button
+                  type="button"
+                  class="btn btn-primary dropdown"
+                  (click)="this.control.saveChartAsImage()">
+                  Save Chart As Image
+                </button>
             </div>
         </div>
     </div>
