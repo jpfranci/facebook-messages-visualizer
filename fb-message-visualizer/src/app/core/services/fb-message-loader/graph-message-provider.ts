@@ -258,6 +258,9 @@ export class GraphMessageProvider {
       }
       this._chartDataset = dataSetAndUnit.dataset;
       this._setHeader(chartOptions, dateModelAndDates, dataSetAndUnit.unit);
+      if (dataSetAndUnit.unit === 'quarter') {
+        dataSetAndUnit.unit = 'month';
+      }
       chartOptions.scales.xAxes[0].time.unit = <TimeUnit> dataSetAndUnit.unit;
       this._changeChartOptions(chartOptions);
     }
@@ -327,7 +330,6 @@ export class GraphMessageProvider {
       }
       this.showGraph();
     }
-
 
   public set isTemporaryMode(isTemporaryMode){
       if (isTemporaryMode) {

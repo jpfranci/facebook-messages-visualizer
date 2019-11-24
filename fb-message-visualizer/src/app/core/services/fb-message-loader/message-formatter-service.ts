@@ -262,12 +262,12 @@ public getSeparatedDates(
         ];
 
         const closestFormatter = formattersWithDiffs.reduce((closestDateFormatter, currentFormatter) => {
-            if (currentFormatter.diff > numberOfTicks - 2 && Math.abs(currentFormatter.diff - numberOfTicks) < Math.abs(closestDateFormatter.diff - numberOfTicks)) {
+            if (Math.abs(currentFormatter.diff - numberOfTicks) < Math.abs(closestDateFormatter.diff - numberOfTicks)) {
                 return currentFormatter;
             } else {
                 return closestDateFormatter;
             }
-        }, monthDiffWithFormatter)
+        }, monthDiffWithFormatter);
 
         return closestFormatter.dateFormatter;
     }
