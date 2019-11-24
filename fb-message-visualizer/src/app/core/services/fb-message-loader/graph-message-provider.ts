@@ -116,12 +116,7 @@ export class GraphMessageProvider {
                         beginAtZero: true
                     }
                 }]
-            },
-          animation: {
-              onComplete(chart: any): void {
-                this._base64Value = this.chart.toBase64Image()
-              }
-          }
+            }
         }
     }
 
