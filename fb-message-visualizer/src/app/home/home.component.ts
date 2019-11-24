@@ -1,8 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { MessageLoaderService, MessageProvider } from '../core/services';
-import { Router } from '@angular/router';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { take, filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -11,7 +8,7 @@ import { take, filter } from 'rxjs/operators';
 })
 export class HomeComponent {
   private _alerts: Array<any>;
-  constructor(private _messageLoaderService: MessageLoaderService, 
+  constructor(private _messageLoaderService: MessageLoaderService,
               private _messageProvider: MessageProvider) {
     this._alerts = [];
   }

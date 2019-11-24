@@ -23,7 +23,6 @@ export class GraphMessageProvider {
     private _selectedToDisplayObservable: BehaviorSubject<ConversationModel | WordModel | ReactionModel>;
     private _labelsObservable: BehaviorSubject<Array<string>>;
     private _dateModel: DateObjectModel;
-    private _base64Value: string;
 
     // Chart Options
     private _selectedParticipantsObservable: BehaviorSubject<Array<string>>;
@@ -69,13 +68,7 @@ export class GraphMessageProvider {
                 private _messageFormatterService: MessageFormatterService) {
         this._initSubjects();
         this._initConversationModel();
-        Chart.plugins.register({
-          beforeDraw(chartInstance: Chart): void {
-              const ctx = chartInstance.ctx;
-              ctx.fillStyle = 'white';
-              ctx.fillRect(0, 0, chartInstance.width, chartInstance.height);
-          }
-        });
+        this._initializeChartSavePlugin();
         this._messageProvider.availableConversations.pipe(
             filter((availableConversations: ConversationModel[]) => availableConversations.length > 0),
             take(1)
@@ -87,6 +80,16 @@ export class GraphMessageProvider {
           })
     }
 
+    private _initializeChartSavePlugin(): void {
+      // put white background on chart so it will render properly when exported
+      Chart.plugins.register({
+        beforeDraw(chartInstance: Chart): void {
+          const ctx = chartInstance.ctx;
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, chartInstance.width, chartInstance.height);
+        }
+      });
+    }
     private _initTimeChartOptions(): ChartOptions {
         return {
             responsive: true,
@@ -487,10 +490,6 @@ export class GraphMessageProvider {
 
     private _resetDateModel(): void {
       this._dateModel = undefined;
-    }
-
-    public get base64Image(): string {
-      return this._base64Value;
     }
 
     public changeWord(wordModel: WordModel): void {
