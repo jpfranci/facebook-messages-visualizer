@@ -8,6 +8,8 @@ import {BaseChartDirective} from "ng2-charts";
 export class ChartControl {
     private _startDate: string;
     private _endDate: string;
+    private _selectedStartDate: string;
+    private _selectedEndDate: string;
     private _chart: BaseChartDirective;
 
     constructor(private _messageFormatterService: MessageFormatterService,
@@ -37,11 +39,13 @@ export class ChartControl {
     }
 
     public changeStartDate(startDate: NgbDateStruct) {
-        this._graphMessageProvider.showGraph(this.dateStructToDate(startDate),  this._endDate);
+      this._graphMessageProvider.setStartDate(this.dateStructToDate(startDate));
+      this._graphMessageProvider.showGraph(this.dateStructToDate(startDate),  undefined);
     }
 
     public changeEndDate(endDate: NgbDateStruct) {
-        this._graphMessageProvider.showGraph(this._startDate, this.dateStructToDate(endDate));
+      this._graphMessageProvider.setEndDate(this.dateStructToDate(endDate));
+      this._graphMessageProvider.showGraph(undefined, this.dateStructToDate(endDate));
     }
 
     public dateToDateToDateStruct(date: Date): NgbDateStruct {

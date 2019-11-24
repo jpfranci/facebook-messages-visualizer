@@ -35,6 +35,8 @@ export class GraphMessageProvider {
 
     private _startDate: BehaviorSubject<Date>;
     private _endDate: BehaviorSubject<Date>;
+    private _selectedStartDate: BehaviorSubject<Date>;
+    private _selectedEndDate: BehaviorSubject<Date>;
 
     private _isTemporaryMode: boolean;
     private _cachedSettings: {
@@ -48,7 +50,11 @@ export class GraphMessageProvider {
       groupModel: ChartGroupModel,
       xAxisDisplay: string,
       showTimeOptions: boolean,
-      labels: Array<string>
+      labels: Array<string>,
+      startDate: Date,
+      endDate: Date,
+      selectedStartDate: Date,
+      selectedEndDate: Date
     };
 
     public static NOT_SEPARATED_NOR_STACKED: ChartGroupModel = {
@@ -155,7 +161,7 @@ export class GraphMessageProvider {
             const ctx = chartInstance.ctx;
             ctx.textAlign = 'center';
             ctx.font = Chart.helpers.fontString(12, 'normal', Chart.defaults.global.defaultFontFamily);
-            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.fillStyle = Chart.defaults.global.defaultFontColor;
             ctx.textBaseline = 'bottom';
 
             this.data.datasets.forEach(function (dataset, i) {
@@ -185,6 +191,8 @@ export class GraphMessageProvider {
         this._xAxisDisplayObservable = new BehaviorSubject<string>(GraphMessageProvider.TIME_AXIS);
         this._showTimeOptionsObservable = new BehaviorSubject<boolean>(true);
         this._isTemporaryMode = false;
+        this._selectedStartDate = new BehaviorSubject<Date>(new Date());
+        this._selectedEndDate = new BehaviorSubject<Date>(new Date());
     }
 
     public showGraph(startDate?: string, endDate?: string): void {
@@ -277,20 +285,16 @@ export class GraphMessageProvider {
       {dates: string, model: any, startDate: string, endDate: string, header: string} {
       let dates;
       let modelToUse;
-      let startDateToUse;
-      let endDateToUse;
+      const startDateToUse = startDate ? startDate: this._selectedStartDate.getValue().toString();
+      const endDateToUse = endDate ? endDate : this._selectedEndDate.getValue().toString();
       let header;
       if (this._dateModel) {
         dates = this._dateModel.dates;
         header = this._dateModel.type;
-        startDateToUse = startDate ? startDate: this._startDate.getValue();
-        endDateToUse = endDate ? endDate : this._endDate.getValue();
       } else {
         modelToUse = this._selectedToDisplayObservable.getValue();
         dates = this._selectedToDisplayObservable.getValue().dates;
         header = "Message";
-        startDateToUse = startDate ? startDate: modelToUse.startDate;
-        endDateToUse = endDate ? endDate : modelToUse.endDate;
       }
       return {
         dates: dates,
@@ -345,7 +349,11 @@ export class GraphMessageProvider {
         groupModel: this._groupModelObservable.getValue(),
         xAxisDisplay: this._xAxisDisplayObservable.getValue(),
         showTimeOptions: this._showTimeOptionsObservable.getValue(),
-        labels: this._labelsObservable.getValue()
+        labels: this._labelsObservable.getValue(),
+        startDate: this._startDate.getValue(),
+        endDate: this._endDate.getValue(),
+        selectedStartDate: this._selectedStartDate.getValue(),
+        selectedEndDate: this._selectedEndDate.getValue()
       }
     }
 
@@ -362,6 +370,10 @@ export class GraphMessageProvider {
         this._xAxisDisplayObservable.next(this._cachedSettings.xAxisDisplay);
         this._showTimeOptionsObservable.next(this._cachedSettings.showTimeOptions);
         this._labelsObservable.next(this._cachedSettings.labels);
+        this._startDate.next(this._cachedSettings.startDate);
+        this._endDate.next(this._cachedSettings.endDate);
+        this._selectedStartDate.next(this._cachedSettings.selectedStartDate);
+        this._selectedEndDate.next(this._cachedSettings.selectedEndDate);
         this._cachedSettings = undefined;
         this._resetDateModel();
         this.showGraph();
@@ -438,6 +450,14 @@ export class GraphMessageProvider {
         this.showGraph();
     }
 
+    public setStartDate(startDate: string) {
+      this._selectedStartDate.next(new Date(startDate));
+    }
+
+    public setEndDate(endDate: string) {
+      this._selectedEndDate.next(new Date(endDate));
+    }
+
     public set chartType(chartType: ChartType) {
         this._chartTypeObservable.next(chartType);
         this.showGraph();
@@ -460,8 +480,7 @@ export class GraphMessageProvider {
 
     public changeConversationModel(conversationModel: ConversationModel): void {
         this._currentConversationObservable.next(conversationModel);
-        this._startDate.next(new Date(conversationModel.startDate));
-        this._endDate.next(new Date(conversationModel.endDate));
+        this._setDates(conversationModel.startDate, conversationModel.endDate);
         this._selectedToDisplayObservable.next(conversationModel);
         this._selectedParticipantsObservable.next(ConversationModelConversions.toParticipantsArray(conversationModel));
         this.showGraph();
@@ -469,6 +488,7 @@ export class GraphMessageProvider {
 
     public changeDateModel(dateModel: DateObjectModel): void {
       const dates = this._getStartAndEndDateFromDateObject(dateModel.dates);
+      this._setDates(dates.startDate, dates.endDate)
       this._startDate.next(new Date(dates.startDate));
       this._endDate.next(new Date(dates.endDate));
       this._dateModel = dateModel;
@@ -477,10 +497,18 @@ export class GraphMessageProvider {
 
     public changeReactionModel(reactionModel: ReactionModel): void {
       this._resetDateModel();
-      this._startDate.next(new Date(reactionModel.startDate));
-      this._endDate.next(new Date(reactionModel.endDate));
+      this._setDates(reactionModel.startDate, reactionModel.endDate)
       this._selectedToDisplayObservable.next(reactionModel);
       this.showGraph();
+    }
+
+    private _setDates(startDateString: string, endDateString: string) {
+      const startDate = new Date(startDateString);
+      const endDate = new Date(endDateString);
+      this._startDate.next(startDate);
+      this._endDate.next(endDate);
+      this._selectedStartDate.next(startDate);
+      this._selectedEndDate.next(endDate);
     }
 
     private _resetDateModel(): void {
