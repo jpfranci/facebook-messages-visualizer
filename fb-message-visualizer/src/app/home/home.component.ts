@@ -8,6 +8,7 @@ import { MessageLoaderService, MessageProvider } from '../core/services';
 })
 export class HomeComponent {
   private _alerts: Array<any>;
+  private _activeTab: string;
   constructor(private _messageLoaderService: MessageLoaderService,
               private _messageProvider: MessageProvider) {
     this._alerts = [];

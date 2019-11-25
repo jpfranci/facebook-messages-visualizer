@@ -3,13 +3,13 @@
     {{ 'PAGES.HOME.TITLE' | translate }}
   </h1>
   <tabset class = "tabset">
-      <tab *ngIf = "this._messageProvider.hasDataSubject | async" heading = 'Visualize Data' active = "true">
+      <tab *ngIf = "this._messageProvider.hasDataSubject | async" heading = 'Visualize Data' active = "true" (selectTab)="_activeTab = 'visualize'">
         <search-component></search-component>
       </tab>
-      <tab *ngIf = "this._messageProvider.hasDataSubject | async" heading = "Quick Stats">
+      <tab *ngIf = "this._messageProvider.hasDataSubject | async" heading = "Quick Stats" (selectTab)="_activeTab = 'quickStats'">
         <summary-tab></summary-tab>
       </tab>
-      <tab heading = 'Load Data' class = "loadTab">
+      <tab heading = 'Load Data' class = "loadTab" (selectTab)="_activeTab = 'load'">
         <div class = "container">
           <ngb-accordion style = "justify-self: start" #acc="ngbAccordion">
             <ngb-panel title="How to use with your Facebook data">
@@ -26,6 +26,11 @@
           </ngb-accordion>
           <button style = "margin-top: auto" type = "button" (click) = "loadFiles()" class = "btn btn-primary">Load Data</button>
         </div>
+    </tab>
+    <tab *ngIf = "this._messageProvider.hasDataSubject | async" heading = "View Your Top Words/Phrases" (selectTab)="_activeTab = 'topWords'">
+      <word-summary-tab *ngIf = "_activeTab === 'topWords'">
+
+      </word-summary-tab>
     </tab>
   </tabset>
   <div *ngFor = "let alert of _alerts" class = 'alert'>

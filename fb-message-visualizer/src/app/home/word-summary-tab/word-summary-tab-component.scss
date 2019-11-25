@@ -1,0 +1,14 @@
+.word-summary-container {
+  height: 75vh;
+  display: flex;
+  flex-direction: column;
+
+  .conversation-picker {
+    margin: 10px;
+  }
+
+  .word-grid {
+    flex: 1;
+    width: 100vw;
+  }
+}

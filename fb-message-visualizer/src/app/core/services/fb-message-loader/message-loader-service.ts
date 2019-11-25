@@ -30,11 +30,12 @@ export class MessageLoaderService {
         "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where",
         "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such",
         "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will",
-        "just", "don", "should", "now", 'u', 'r', ' ',]
+        "just", "don", "should", "now", 'u', 'r', ' ', "ur", "it's", "its", "i'm", "im"]
     );
     public static DEFAULTNGRAMS: number = 3;
     public time: number;
     public static DEFAULT_DB_STORAGE: number = 6000;
+    public static DEFAULT_MEMORY_SIZE: number = 50000;
 
     constructor(private _databaseService: DatabaseService,
                 private _messageProvider: MessageProvider,
@@ -90,10 +91,12 @@ export class MessageLoaderService {
             gifs: JSON.stringify(wordsDetail.dates.gifs),
             startDate: new Date(messages.messages[messages.messages.length - 1].timestamp_ms).toString(),
             endDate: new Date(messages.messages[0].timestamp_ms).toString()
-        }
-        this._messageProvider.setMemoryModel(wordsDetail.words, conversationModel);
+        };
+        const wordsToSave = wordsDetail.words.slice(0, MessageLoaderService.DEFAULT_MEMORY_SIZE);
+        wordsDetail.words = [];
+        this._messageProvider.setMemoryModel(wordsToSave, conversationModel);
         this._insertReactions(wordsDetail.reactions);
-        this._insertWords(wordsDetail.words, numToInsert, conversationModel);
+        this._insertWords(wordsToSave, numToInsert, conversationModel);
     }
 
     public getTotalFrequency(frequencies: {}): number {

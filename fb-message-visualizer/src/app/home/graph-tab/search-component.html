@@ -1,61 +1,35 @@
 <div class = "filters-container">
-    <div 
-        *ngIf="this._graphMessageProvider.selectedConversationNameObservable | async as displayName" 
-        class="btn-group dropdown" 
-        dropdown 
-        [autoClose] = "true">
-        <button 
-            id="button-animated" 
-            dropdownToggle 
-            type="button" 
-            class="btn btn-primary dropdown-toggle"
-            aria-controls="dropdown-animated">
-            {{ "Currently viewing chat with " + displayName }}
-        </button>
-            <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
-                role="menu" aria-labelledby="button-animated">
-                <li 
-                    role = "menuitem" 
-                    *ngFor = "let conversationModel of _messageProvider.availableConversations | async">
-                    <a 
-                        class = "dropdown-item" 
-                        href="#" 
-                        (click) = "this._graphMessageProvider.changeConversationModel(conversationModel)">
-                        {{ conversationModel.displayName }}
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <div class="btn-group dropdown" #dropdown="bs-dropdown" dropdown [autoClose] = "false">
-            <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
-                    aria-controls="dropdown-animated">
-                Filter search by
-            </button>
-            <ul id="dropdown-animated"  *dropdownMenu class="dropdown-menu filter-dropdown"
-                role="menu" aria-labelledby="button-animated">
-                <li role = "menuitem">
-                    <div class = "filter">
-                        <input 
-                            [(ngModel)] = "this._searchControl.fromWordFilterOption"
-                            class = "filter-picker" 
-                            (keyup.enter) = "dropdown.hide()"
-                            placeholder = "1"/>
-                        <p>to</p>
-                        <input 
-                            [(ngModel)] = "this._searchControl.toWordFilterOption"
-                            class = "filter-picker" 
-                            (keyup.enter) = "dropdown.hide()"
-                            placeholder = "{{ this._searchControl.getToFilterWordPlaceholder() }}"/>
-                        <p>words</p>
-                    </div>
-                </li>
-            </ul>
-        </div>
+      <conversation-picker></conversation-picker>
+      <div class="btn-group dropdown" #dropdown="bs-dropdown" dropdown [autoClose] = "false">
+          <button id="button-animated" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+                  aria-controls="dropdown-animated">
+              Filter search by
+          </button>
+          <ul id="dropdown-animated"  *dropdownMenu class="dropdown-menu filter-dropdown"
+              role="menu" aria-labelledby="button-animated">
+              <li role = "menuitem">
+                  <div class = "filter">
+                      <input
+                          [(ngModel)] = "this._searchControl.fromWordFilterOption"
+                          class = "filter-picker"
+                          (keyup.enter) = "dropdown.hide()"
+                          placeholder = "1"/>
+                      <p>to</p>
+                      <input
+                          [(ngModel)] = "this._searchControl.toWordFilterOption"
+                          class = "filter-picker"
+                          (keyup.enter) = "dropdown.hide()"
+                          placeholder = "{{ this._searchControl.getToFilterWordPlaceholder() }}"/>
+                      <p>words</p>
+                  </div>
+              </li>
+          </ul>
+      </div>
 </div>
-<input type="text" 
-       class="form-control" 
+<input type="text"
+       class="form-control"
        placeholder="Search for words or phrases"
-       [(ngModel)]="this._searchControl.selectedWord" 
+       [(ngModel)]="this._searchControl.selectedWord"
        (selectItem)="this._graphMessageProvider.changeWord($event.item)"
        [ngbTypeahead]="this._searchControl.onType"
        [inputFormatter]="_inputFormatter"

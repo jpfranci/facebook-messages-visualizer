@@ -86,11 +86,14 @@ export class GraphMessageProvider {
             this._selectedToDisplayObservable.next(conversationModel);
             this.showGraph();
           });
-        this._messageProvider.inMemorySubject.subscribe((wordModels: Array<WordModel>) => {
-          if (wordModels.length > 0 && this._currentConversationObservable.getValue().displayName === wordModels[0].displayName) {
-            this._wordModels = this._messageProvider.inMemorySubject;
-          }
-        });
+        this._messageProvider.inMemorySubject
+          .subscribe((wordModels: Array<WordModel>) => {
+            if (wordModels.length > 0
+                && wordModels !== this._wordModels.getValue()
+                && this._currentConversationObservable.getValue().displayName === wordModels[0].displayName) {
+              this._wordModels.next(wordModels);
+            }
+          });
     }
 
     private _initializeChartSavePlugin(): void {
@@ -504,6 +507,15 @@ export class GraphMessageProvider {
           take(1)
         ).subscribe((wordModels: Array<WordModel>) => {
           this._wordModels.next(wordModels);
+        });
+        this._messageProvider.inMemorySubject
+          .pipe(take(1))
+          .subscribe((wordModels: Array<WordModel>) => {
+            if (wordModels.length > 0
+              && wordModels !== this._wordModels.getValue()
+              && this._currentConversationObservable.getValue().displayName === wordModels[0].displayName) {
+            this._wordModels.next(wordModels);
+          }
         });
         this._setDates(conversationModel.startDate, conversationModel.endDate);
         this._selectedToDisplayObservable.next(conversationModel);

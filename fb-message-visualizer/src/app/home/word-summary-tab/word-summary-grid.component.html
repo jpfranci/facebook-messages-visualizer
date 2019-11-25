@@ -1,0 +1,10 @@
+<ag-grid-angular
+  class="ag-theme-balham"
+  style="height: 100%; width: 100%;"
+  [rowData]="_graphMessageProvider.wordModels | async"
+  (gridReady)="onGridReady($event)"
+  [columnDefs]="_columnDefs | async"
+  [defaultColDef]="_defaultColDef"
+  [modules]="_modules"
+  [pagination] = "true">
+</ag-grid-angular>

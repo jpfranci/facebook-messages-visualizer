@@ -1,6 +1,6 @@
 <div class = "container">
     <div [ngClass]="{'chart-container': !isSmall, 'chart-container-small': isSmall}">
-      <canvas baseChart width = "100" height = "300"
+      <canvas baseChart 
           [datasets] = "this._graphMessageProvider.chartDataset"
           [chartType] = "this._graphMessageProvider.chartTypeObservable | async"
           [labels] = "this._graphMessageProvider.labelsObservable | async"

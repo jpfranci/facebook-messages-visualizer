@@ -1,0 +1,27 @@
+<div
+  *ngIf="this._graphMessageProvider.selectedConversationNameObservable | async as displayName"
+  class="btn-group dropdown"
+  dropdown
+  [autoClose] = "true">
+  <button
+    id="button-animated"
+    dropdownToggle
+    type="button"
+    class="btn btn-primary dropdown-toggle"
+    aria-controls="dropdown-animated">
+    {{ "Currently viewing chat with " + displayName }}
+  </button>
+  <ul id="dropdown-animated" *dropdownMenu class="dropdown-menu"
+      role="menu" aria-labelledby="button-animated">
+    <li
+      role = "menuitem"
+      *ngFor = "let conversationModel of _messageProvider.availableConversations | async">
+      <a
+        class = "dropdown-item"
+        href="#"
+        (click) = "this._graphMessageProvider.changeConversationModel(conversationModel)">
+        {{ conversationModel.displayName }}
+      </a>
+    </li>
+  </ul>
+</div>

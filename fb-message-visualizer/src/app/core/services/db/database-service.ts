@@ -5,7 +5,7 @@ import { ConversationModel } from '../../models/conversation-model';
 import { ReactionModel } from "../../models";
 @Injectable({
     providedIn: 'root'
-}) 
+})
 
 export class DatabaseService {
     public static CONVERSATION_TABLE: string = "Conversation";
@@ -19,11 +19,11 @@ export class DatabaseService {
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: './testxdxd.db',
+              filename: './testyaa.db',
             },
           });
-        
-        this._createdTablesObservable = new BehaviorSubject<boolean>(false);  
+
+        this._createdTablesObservable = new BehaviorSubject<boolean>(false);
         this.buildTables();
     }
 
@@ -38,7 +38,7 @@ export class DatabaseService {
         let doesExist: boolean = await this.db.schema.hasTable(DatabaseService.CONVERSATION_TABLE);
         if (!doesExist) {
             await this.db.schema.createTable(DatabaseService.CONVERSATION_TABLE, (table) => {
-                // Display name on facebook 
+                // Display name on facebook
                 table.string('displayName', DatabaseService.MAX_CHARACTERS_STRING).primary(),
                 // comma separated string
                 table.string('participants', DatabaseService.MAX_CHARACTERS_STRING),
@@ -51,12 +51,12 @@ export class DatabaseService {
                 table.json('photos'),
                 table.json('stickers'),
                 table.json('videos'),
-                table.json('gifs')
+                table.json('gifs'),
                 table.string('startDate'),
                 table.string('endDate')
             });
         }
-        
+
         doesExist = await this.db.schema.hasTable(DatabaseService.WORDS_TABLE);
         if (!doesExist) {
             await this.db.schema.createTableIfNotExists(DatabaseService.WORDS_TABLE, (table) => {
@@ -67,7 +67,7 @@ export class DatabaseService {
                 // Json representing all dates word is used
                 table.json('dates'),
                 table.string('startDate'),
-                table.string('endDate')
+                table.string('endDate'),
                 table.primary(['word', 'displayName'])
             });
         }
@@ -82,11 +82,11 @@ export class DatabaseService {
                 // Json representing all dates word is used
                 table.json('dates'),
                 table.string('startDate'),
-                table.string('endDate')
+                table.string('endDate'),
                 table.primary(['reaction', 'displayName'])
             });
         }
-        
+
         doesExist = await this.db.schema.hasTable(DatabaseService.PAST_SEARCHES_TABLE);
         if(!doesExist) {
             await this.db.schema.createTableIfNotExists(DatabaseService.PAST_SEARCHES_TABLE, (table) => {
@@ -101,7 +101,7 @@ export class DatabaseService {
     }
 
     public insertIntoTable(
-        tableName: string, 
+        tableName: string,
         values: ConversationModel | Array<WordModel> | Array<ReactionModel>): Promise<any> {
         return this.db.insert(values).into(tableName);
     }

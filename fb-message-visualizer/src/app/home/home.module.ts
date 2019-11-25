@@ -30,7 +30,10 @@ import {ChartModalComponent} from "./summary-tab/chart-modal-component";
 import {SelectDateTypeComponent} from "./summary-tab/select-date-type-component";
 import {XAxisSelectionComponent} from "./graph-tab/x-axis-selection-component";
 import {ReactionPickerComponent} from "./summary-tab/reaction-picker-component";
+import {WordSummaryGridComponent} from "./word-summary-tab/word-summary-grid.component";
+import { AgGridModule } from '@ag-grid-community/angular'
 import {WordSummaryTabComponent} from "./word-summary-tab/word-summary-tab-component";
+import {ConversationPickerComponent} from "./graph-tab/conversation-picker-component";
 
 
 @NgModule({
@@ -50,7 +53,9 @@ import {WordSummaryTabComponent} from "./word-summary-tab/word-summary-tab-compo
     SelectDateTypeComponent,
     XAxisSelectionComponent,
     ReactionPickerComponent,
-    WordSummaryTabComponent
+    WordSummaryGridComponent,
+    WordSummaryTabComponent,
+    ConversationPickerComponent
   ],
   imports: [
     CommonModule,
@@ -66,7 +71,8 @@ import {WordSummaryTabComponent} from "./word-summary-tab/word-summary-tab-compo
     ChartsModule,
     NgbAccordionModule,
     ModalModule.forRoot(),
-    FontAwesomeModule
+    FontAwesomeModule,
+    AgGridModule.withComponents([])
   ]
 })
 export class HomeModule {
