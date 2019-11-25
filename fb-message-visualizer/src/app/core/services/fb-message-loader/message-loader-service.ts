@@ -111,11 +111,15 @@ export class MessageLoaderService {
 
     public sumUpDatesObject(dates: any): number {
         return Object.keys(dates).reduce((accum, participant) => {
-            const participantTotal = Object.keys(dates[participant]).reduce((accumDate, date) => {
-                return accumDate + dates[participant][date];
-            }, 0);
+            const participantTotal = this.sumUpIndividualInDateObject(dates[participant]);
             return participantTotal + accum;
         }, 0)
+    }
+
+    public sumUpIndividualInDateObject(participantDateObject: {}): number {
+      return Object.keys(participantDateObject).reduce((accumDate, date) => {
+        return accumDate + participantDateObject[date];
+      }, 0);
     }
 
     private async _insertReactions(reactions: Array<ReactionModel>): Promise<void> {

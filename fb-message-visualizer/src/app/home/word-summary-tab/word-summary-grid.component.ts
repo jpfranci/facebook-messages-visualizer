@@ -92,6 +92,7 @@ export class WordSummaryGridComponent {
     let columnsToSave: Array<{}> = [];
     columnsToSave.push(WordSummaryGridComponent._phraseCol, this._totalCol);
     const participants = ConversationModelConversions.toParticipantsArray(conversationModel);
+    this._sortParticipantsByTotal(participants, conversationModel);
     participants.forEach((participant: string) => {
       columnsToSave.push({
         headerName: participant,
@@ -111,5 +112,18 @@ export class WordSummaryGridComponent {
       })
     });
     this._columnDefs.next(columnsToSave);
+  }
+
+  private _sortParticipantsByTotal(participants: Array<string>, conversationModel: ConversationModel): void {
+    const datesObject = JSON.parse(conversationModel.dates);
+    participants.sort((participantA: string, participantB: string) => {
+      if (datesObject.hasOwnProperty(participantA) && datesObject.hasOwnProperty(participantB)) {
+        return this._messageLoaderService.sumUpIndividualInDateObject(datesObject[participantB]) - this._messageLoaderService.sumUpIndividualInDateObject(datesObject[participantA]);
+      } else if (datesObject.hasOwnProperty(participantA)) {
+        return -1;
+      } else {
+        return 0;
+      }
+    })
   }
 }

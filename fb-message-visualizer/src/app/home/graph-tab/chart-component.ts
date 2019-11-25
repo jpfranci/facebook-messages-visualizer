@@ -3,7 +3,7 @@ import { BaseChartDirective } from "ng2-charts";
 import { MessageFormatterService } from "../../core/services/fb-message-loader/message-formatter-service";
 import { ChartControl } from "../control/chart-control";
 import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
-import { GraphMessageProvider, SaveGraphService} from "../../core/services";
+import { GraphMessageProvider, SaveDataService} from "../../core/services";
 import { ModalDirective } from "ngx-bootstrap";
 
 @Component({
@@ -21,7 +21,7 @@ export class ChartComponent {
 
   constructor(private _messageFormatterService: MessageFormatterService,
               private _graphMessageProvider: GraphMessageProvider,
-              saveGraphService: SaveGraphService) {
+              saveGraphService: SaveDataService) {
     this._chartControl = new ChartControl(_messageFormatterService, _graphMessageProvider, saveGraphService);
     this._chartControl.startDate.subscribe((startDate) => {
       this._startDate = startDate;

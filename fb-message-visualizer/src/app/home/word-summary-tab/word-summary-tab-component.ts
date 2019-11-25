@@ -1,5 +1,5 @@
 import {Component} from "@angular/core";
-import {GraphMessageProvider} from "../../core/services";
+import {GraphMessageProvider, SaveDataService} from "../../core/services";
 import {WordSummaryControl} from "../control/word-summary-control";
 
 @Component({
@@ -9,8 +9,9 @@ import {WordSummaryControl} from "../control/word-summary-control";
 })
 export class WordSummaryTabComponent {
   private _control: WordSummaryControl;
-  constructor(private _graphMessageProvider: GraphMessageProvider) {
-    this._control = new WordSummaryControl(_graphMessageProvider);
+  constructor(private _graphMessageProvider: GraphMessageProvider,
+              saveDataService: SaveDataService) {
+    this._control = new WordSummaryControl(_graphMessageProvider, saveDataService);
     _graphMessageProvider.isTemporaryMode = true;
   }
 

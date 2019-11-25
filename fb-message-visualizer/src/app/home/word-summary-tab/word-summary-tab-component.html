@@ -1,4 +1,12 @@
 <div class = "word-summary-container">
-  <conversation-picker class = "conversation-picker"></conversation-picker>
+  <div class = "word-summary-filters-container">
+    <conversation-picker style = "margin: 0 10px 0 0;"></conversation-picker>
+    <button
+      type="button"
+      class="btn btn-primary dropdown"
+      (click)="this._control.saveGridAsCSV()">
+      Save As Excel File
+    </button>
+  </div>
   <word-summary-grid class = "word-grid" [control]="_control"></word-summary-grid>
 </div>

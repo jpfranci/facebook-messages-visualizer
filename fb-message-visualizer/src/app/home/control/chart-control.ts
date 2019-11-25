@@ -1,6 +1,6 @@
 import { MessageFormatterService } from "../../core/services/fb-message-loader/message-formatter-service";
 import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
-import {GraphMessageProvider, SaveGraphService} from "../../core/services";
+import {GraphMessageProvider, SaveDataService} from "../../core/services";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import {BaseChartDirective} from "ng2-charts";
@@ -14,7 +14,7 @@ export class ChartControl {
 
     constructor(private _messageFormatterService: MessageFormatterService,
                 private _graphMessageProvider: GraphMessageProvider,
-                private _saveGraphService: SaveGraphService) {}
+                private _saveGraphService: SaveDataService) {}
 
     public get startDate(): Observable<NgbDateStruct> {
         return this._getDate(this._graphMessageProvider.startDate);
@@ -25,7 +25,7 @@ export class ChartControl {
     }
 
     public saveChartAsImage(): void {
-      this._saveGraphService.saveFiles(this._chart.toBase64Image());
+      this._saveGraphService.saveGraphImage(this._chart.toBase64Image());
     }
 
     public get endDate(): Observable<NgbDateStruct> {
