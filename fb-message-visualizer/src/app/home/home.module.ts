@@ -30,6 +30,7 @@ import {ChartModalComponent} from "./summary-tab/chart-modal-component";
 import {SelectDateTypeComponent} from "./summary-tab/select-date-type-component";
 import {XAxisSelectionComponent} from "./graph-tab/x-axis-selection-component";
 import {ReactionPickerComponent} from "./summary-tab/reaction-picker-component";
+import {WordSummaryTabComponent} from "./word-summary-tab/word-summary-tab-component";
 
 
 @NgModule({
@@ -48,7 +49,8 @@ import {ReactionPickerComponent} from "./summary-tab/reaction-picker-component";
     ChartModalComponent,
     SelectDateTypeComponent,
     XAxisSelectionComponent,
-    ReactionPickerComponent
+    ReactionPickerComponent,
+    WordSummaryTabComponent
   ],
   imports: [
     CommonModule,

@@ -20,6 +20,7 @@ import * as Chart from "chart.js";
 export class GraphMessageProvider {
     private _chartDataset: Array<{data: SingleDataSet, label: string}>;
     private _currentConversationObservable: BehaviorSubject<ConversationModel>;
+    private _wordModels: BehaviorSubject<Array<WordModel>>;
     private _selectedToDisplayObservable: BehaviorSubject<ConversationModel | WordModel | ReactionModel>;
     private _labelsObservable: BehaviorSubject<Array<string>>;
     private _dateModel: DateObjectModel;
@@ -42,6 +43,7 @@ export class GraphMessageProvider {
     private _cachedSettings: {
       chartDataset: Array<{data: SingleDataSet, label: string}>,
       currentConversation: ConversationModel,
+      wordModels: Array<WordModel>,
       selectedToDisplay: ConversationModel | WordModel | ReactionModel,
       selectedParticipants: Array<string>,
       chartOptions: ChartOptions,
@@ -83,7 +85,12 @@ export class GraphMessageProvider {
             const conversationModel = conversationModels[0];
             this._selectedToDisplayObservable.next(conversationModel);
             this.showGraph();
-          })
+          });
+        this._messageProvider.inMemorySubject.subscribe((wordModels: Array<WordModel>) => {
+          if (wordModels.length > 0 && this._currentConversationObservable.getValue().displayName === wordModels[0].displayName) {
+            this._wordModels = this._messageProvider.inMemorySubject;
+          }
+        });
     }
 
     private _initializeChartSavePlugin(): void {
@@ -160,7 +167,7 @@ export class GraphMessageProvider {
             const chartInstance = this.chart;
             const ctx = chartInstance.ctx;
             ctx.textAlign = 'center';
-            ctx.font = Chart.helpers.fontString(12, 'normal', Chart.defaults.global.defaultFontFamily);
+            ctx.font = Chart.helpers.fontString(9, 'normal', Chart.defaults.global.defaultFontFamily);
             ctx.fillStyle = Chart.defaults.global.defaultFontColor;
             ctx.textBaseline = 'bottom';
 
@@ -179,6 +186,7 @@ export class GraphMessageProvider {
     private _initSubjects(): void {
         this._chartDataset = [{data: [], label: ""}];
         this._labelsObservable = new BehaviorSubject<Array<string>>([]);
+        this._wordModels = new BehaviorSubject<Array<WordModel>>([]);
         this._chartOptionsObservable = new BehaviorSubject<ChartOptions>(this._initTimeChartOptions());
         this._currentConversationObservable = new BehaviorSubject<ConversationModel>(undefined);
         this._selectedParticipantsObservable = new BehaviorSubject<Array<string>>([]);
@@ -280,7 +288,7 @@ export class GraphMessageProvider {
       } else if (dateModelAndDates.model && dateModelAndDates.model.hasOwnProperty('reaction')) {
         chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count of ${this.capitalizeFirstLetter((<ReactionModel>dateModelAndDates.model).reaction)} by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
       } else {
-      chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
+        chartOptions.title.text = `${startText} ${dateModelAndDates.header} Count by ${this.capitalizeFirstLetter(unitToUse)} for Chat with ${conversationModel.displayName}`;
       }
     }
 
@@ -297,7 +305,11 @@ export class GraphMessageProvider {
       } else {
         modelToUse = this._selectedToDisplayObservable.getValue();
         dates = this._selectedToDisplayObservable.getValue().dates;
-        header = "Message";
+        if (this._selectedToDisplayObservable.getValue().hasOwnProperty('reaction')) {
+          header = "Reactions";
+        } else {
+          header = "Message";
+        }
       }
       return {
         dates: dates,
@@ -343,6 +355,7 @@ export class GraphMessageProvider {
       this._cachedSettings = {
         chartDataset: this._chartDataset,
         currentConversation: this._currentConversationObservable.getValue(),
+        wordModels: this._wordModels.getValue(),
         selectedToDisplay: this._selectedToDisplayObservable.getValue(),
         selectedParticipants: this._selectedParticipantsObservable.getValue(),
         chartOptions: this._chartOptionsObservable.getValue(),
@@ -363,6 +376,7 @@ export class GraphMessageProvider {
       if (this._cachedSettings !== undefined) {
         this._chartDataset = this._cachedSettings.chartDataset;
         this._currentConversationObservable.next(this._cachedSettings.currentConversation);
+        this._wordModels.next(this._cachedSettings.wordModels);
         this._selectedToDisplayObservable.next(this._cachedSettings.selectedToDisplay);
         this._selectedParticipantsObservable.next(this._cachedSettings.selectedParticipants);
         this._chartOptionsObservable.next(this._cachedSettings.chartOptions);
@@ -469,6 +483,10 @@ export class GraphMessageProvider {
       return this._labelsObservable;
     }
 
+    public get wordModels(): Observable<Array<WordModel>> {
+      return this._wordModels;
+    }
+
     private _initConversationModel(): void {
         this._messageProvider.availableConversations.pipe(
             filter((availableConversations: ConversationModel[]) => availableConversations.length > 0),
@@ -482,6 +500,11 @@ export class GraphMessageProvider {
 
     public changeConversationModel(conversationModel: ConversationModel): void {
         this._currentConversationObservable.next(conversationModel);
+        this._messageProvider.getWords(conversationModel.displayName, "").pipe(
+          take(1)
+        ).subscribe((wordModels: Array<WordModel>) => {
+          this._wordModels.next(wordModels);
+        });
         this._setDates(conversationModel.startDate, conversationModel.endDate);
         this._selectedToDisplayObservable.next(conversationModel);
         this._selectedParticipantsObservable.next(ConversationModelConversions.toParticipantsArray(conversationModel));
@@ -490,7 +513,7 @@ export class GraphMessageProvider {
 
     public changeDateModel(dateModel: DateObjectModel): void {
       const dates = this._getStartAndEndDateFromDateObject(dateModel.dates);
-      this._setDates(dates.startDate, dates.endDate)
+      this._setDates(dates.startDate, dates.endDate);
       this._startDate.next(new Date(dates.startDate));
       this._endDate.next(new Date(dates.endDate));
       this._dateModel = dateModel;
@@ -499,7 +522,7 @@ export class GraphMessageProvider {
 
     public changeReactionModel(reactionModel: ReactionModel): void {
       this._resetDateModel();
-      this._setDates(reactionModel.startDate, reactionModel.endDate)
+      this._setDates(reactionModel.startDate, reactionModel.endDate);
       this._selectedToDisplayObservable.next(reactionModel);
       this.showGraph();
     }

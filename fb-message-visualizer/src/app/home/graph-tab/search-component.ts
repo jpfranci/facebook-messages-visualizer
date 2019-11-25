@@ -12,20 +12,20 @@ import { BsModalService, BsModalRef, ModalDirective } from 'ngx-bootstrap/modal'
     styleUrls: ['./search-component.scss']
   })
 export class SearchComponent {
-  @ViewChild(NgbTypeahead, {static: true}) 
+  @ViewChild(NgbTypeahead, {static: true})
   private _ngbTypeahead: NgbTypeahead;
   private _searchControl: SearchControl;
   private _modalRef: BsModalRef;
 
   constructor(
-    private _messageProvider: MessageProvider, 
+    private _messageProvider: MessageProvider,
     private _messageLoaderService: MessageLoaderService,
     private _graphMessageProvider: GraphMessageProvider,
     private _messageFormatterService: MessageFormatterService,
     private _modalService: BsModalService) {
       this._searchControl = new SearchControl(
-        this._ngbTypeahead, 
-        _messageLoaderService, 
+        this._ngbTypeahead,
+        _messageLoaderService,
         _messageProvider,
         _graphMessageProvider);
   }
@@ -37,12 +37,12 @@ export class SearchComponent {
   ngAfterViewInit() {
     this._searchControl.ngbTypeahead = this._ngbTypeahead;
   }
-  
+
   _wordModelFormatter = (result: WordModel) => {
     const totalFrequency: number = this._messageLoaderService.getTotalFrequency(JSON.parse(result.frequencies));
     return `"${result.word}" has been used ${totalFrequency} times`;
-  } 
-  
+  };
+
   _inputFormatter = (item: any) => {
     if (item.word) {
       return item.word;

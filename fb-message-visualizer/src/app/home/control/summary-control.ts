@@ -52,6 +52,9 @@ export class SummaryControl {
 
   public set selectedReaction(reactionModel: ReactionModel) {
     this._selectedReaction = reactionModel;
+    if (reactionModel === undefined) {
+      this.changeGeneralDateType({type: SummaryControl.REACTIONS_TYPE, dates: ""});
+    }
     this._graphMessageProvider.changeReactionModel(reactionModel);
   }
 

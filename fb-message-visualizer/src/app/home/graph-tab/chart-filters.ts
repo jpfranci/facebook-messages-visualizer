@@ -1,5 +1,6 @@
-import {Component, Input} from "@angular/core";
+import {Component, Input, ViewChild} from "@angular/core";
 import {ChartControl} from "../control/chart-control";
+import {ModalDirective} from "ngx-bootstrap";
 
 @Component({
     selector: 'chart-filters',
@@ -8,4 +9,11 @@ import {ChartControl} from "../control/chart-control";
   })
 export class ChartFilters {
   @Input() control: ChartControl;
+  @ViewChild(ModalDirective, { static: false }) modal: ModalDirective;
+
+  ngAfterViewInit() {
+      this.modal.config = {
+        keyboard: false
+      };
+  }
 }

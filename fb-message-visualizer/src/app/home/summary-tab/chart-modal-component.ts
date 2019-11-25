@@ -13,5 +13,8 @@ export class ChartModalComponent  {
 
   ngAfterViewInit() {
     this.control.chartModal = this.modal;
+    this.modal.config = {
+      keyboard: false
+    };
   }
 }

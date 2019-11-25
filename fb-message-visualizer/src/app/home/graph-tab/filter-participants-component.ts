@@ -14,7 +14,7 @@ export class FilterParticipantsComponent {
     constructor(private _graphMessageProvider: GraphMessageProvider) {
         this._selectAllParticipants();
     }
-    
+
     private _selectAllParticipants(): void {
         this._graphMessageProvider.participantsObservable.subscribe((participants: Array<string>) => {
             this._participantsBuffer = participants.slice();

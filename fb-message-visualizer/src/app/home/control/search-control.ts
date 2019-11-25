@@ -10,7 +10,6 @@ export class SearchControl {
     public selectedConversationInput: string;
     public selectedWord: string;
 
-    private _wordModels: Observable<Array<WordModel>>;
     private _selectedConversation: ConversationModel;
 
     constructor(private _ngbTypeahead: NgbTypeahead,
@@ -18,17 +17,8 @@ export class SearchControl {
                 private _messageProvider: MessageProvider,
                 private _graphMessageProvider: GraphMessageProvider) {
       this.selectedConversationInput = "You must pick a conversation to analyze before you begin";
-      
-      this._messageProvider.inMemorySubject.subscribe((wordModels: Array<WordModel>) => {
-        if (wordModels.length > 0 && this.selectedConversationInput === wordModels[0].displayName) {
-          this._wordModels = this._messageProvider.inMemorySubject;
-        }
-      })
 
-      // this._wordModels = this._graphMessageProvider.wordsObservable;
-      
       this._graphMessageProvider.currentConversation.subscribe((conversationModel: ConversationModel) => {
-       this._wordModels = this._messageProvider.getWords(conversationModel.displayName, "");
         this._selectedConversation = conversationModel;
       })
     }
@@ -54,23 +44,23 @@ export class SearchControl {
           this._ngbTypeahead.dismissPopup()
         }
       }),
-      filter(term => term.length > 1 && this._wordModels !== undefined),
-      switchMap(term => this._wordModels.pipe(
+      filter(term => term.length > 1),
+      switchMap(term => this._graphMessageProvider.wordModels.pipe(
         map((wordModels) => {
           let query;
           try {
             query = new RegExp(term, 'i');
-          } catch { 
+          } catch {
             return [];
           }
-          const fromFilterCondition: number = this.fromWordFilterOption && Number(this.fromWordFilterOption) ? 
+          const fromFilterCondition: number = this.fromWordFilterOption && Number(this.fromWordFilterOption) ?
             Number(this.fromWordFilterOption) : 0;
           const toFilterCondition: number = this.toWordFilterOption && Number(this.toWordFilterOption) ?
             Number(this.toWordFilterOption) : this._selectedConversation.nGrams;
           const filtered = wordModels.filter((wordModel: WordModel) => {
             const wordLength = wordModel.word.split(' ').length;
-            return wordLength >= fromFilterCondition && 
-              wordLength <= toFilterCondition && 
+            return wordLength >= fromFilterCondition &&
+              wordLength <= toFilterCondition &&
               query.test(wordModel.word)
           });
           return filtered.slice(0, 10);

@@ -4,6 +4,7 @@ import { take, switchMap, filter, map, tap, debounceTime } from 'rxjs/operators'
 import { WordModel } from '../../models/word-model';
 import { DatabaseService } from '../db/database-service';
 import { ConversationModel, ReactionModel } from '../../models';
+import {GraphMessageProvider} from "./graph-message-provider";
 
 @Injectable({
     providedIn: 'root'
@@ -15,7 +16,7 @@ export class MessageProvider {
     private _availableReactions: BehaviorSubject<Array<ReactionModel>>;
     private _isAppReadyToUse: BehaviorSubject<boolean>;
 
-    constructor(private _databaseService: DatabaseService) {
+  constructor(private _databaseService: DatabaseService) {
         this._inMemorySubject = new BehaviorSubject<Array<WordModel>>([]);
         this._availableReactions = new BehaviorSubject<Array<ReactionModel>>([]);
         this._hasDataSubject = new BehaviorSubject<boolean>(false);
@@ -38,6 +39,7 @@ export class MessageProvider {
             },
             (err: Error) => console.log(err)
         )
+
     }
 
     public get reactionModels(): Observable<Array<ReactionModel>> {
@@ -58,7 +60,7 @@ export class MessageProvider {
             let currConversations: Array<ConversationModel> = this._availableConversations.getValue().slice();
             if (!currConversations.map(conversationModel => conversationModel.displayName).includes(conversationModel.displayName)) {
                 currConversations.push(conversationModel);
-                this._availableConversations.next(currConversations); 
+                this._availableConversations.next(currConversations);
             }
         }
     }
@@ -71,7 +73,7 @@ export class MessageProvider {
             if (searchTerm.length > 0) {
                 return from(this._databaseService.getAllWordsThatMatchPattern(DatabaseService.WORDS_TABLE, searchTerm));
             } else {
-                return from(this._databaseService.getAllFromTableWithDisplayName(DatabaseService.WORDS_TABLE, 
+                return from(this._databaseService.getAllFromTableWithDisplayName(DatabaseService.WORDS_TABLE,
                     displayName));
             }
         }
