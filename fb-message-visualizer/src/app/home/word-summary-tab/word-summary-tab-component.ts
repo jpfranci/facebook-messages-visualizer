@@ -8,8 +8,8 @@ import {WordSummaryControl} from "../control/word-summary-control";
   styleUrls: ['./word-summary-tab-component.scss']
 })
 export class WordSummaryTabComponent {
-  private _control: WordSummaryControl;
-  constructor(private _graphMessageProvider: GraphMessageProvider,
+  public _control: WordSummaryControl;
+  constructor(public _graphMessageProvider: GraphMessageProvider,
               saveDataService: SaveDataService) {
     this._control = new WordSummaryControl(_graphMessageProvider, saveDataService);
     _graphMessageProvider.isTemporaryMode = true;

@@ -6,7 +6,7 @@ import {GraphMessageProvider} from "../../core/services";
   templateUrl: './x-axis-selection-component.html'
 })
 export class XAxisSelectionComponent {
-  private _dropdownOptions = [GraphMessageProvider.TIME_AXIS, GraphMessageProvider.PARTICIPANTS_AXIS];
+  public _dropdownOptions = [GraphMessageProvider.TIME_AXIS, GraphMessageProvider.PARTICIPANTS_AXIS];
 
-  constructor(private _graphMessageProvider: GraphMessageProvider) {}
+  constructor(public _graphMessageProvider: GraphMessageProvider) {}
 }

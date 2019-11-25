@@ -7,11 +7,10 @@ import { ChartType } from "chart.js";
     templateUrl: './chart-type-filter-component.html'
   })
 export class ChartTypeFilterComponent {
-    private _conversionMap: Map<string, string>;
-    private _types;
-    private _selectedType;
+    public _conversionMap: Map<string, string>;
+    public _types;
 
-    constructor(private _graphMessageProvider: GraphMessageProvider) {
+    constructor(public _graphMessageProvider: GraphMessageProvider) {
         this._conversionMap = new Map<string, string>();
         this._conversionMap.set('line' , "Line Chart");
         this._conversionMap.set('bar', "Bar Chart");

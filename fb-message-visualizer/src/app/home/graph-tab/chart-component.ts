@@ -15,12 +15,12 @@ export class ChartComponent {
   @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective;
   @ViewChild(ModalDirective, { static: false }) modal: ModalDirective;
   @Input() isSmall: boolean;
-  private _chartControl: ChartControl;
-  private _startDate: NgbDateStruct;
-  private _endDate: NgbDateStruct;
+  public _chartControl: ChartControl;
+  public _startDate: NgbDateStruct;
+  public _endDate: NgbDateStruct;
 
-  constructor(private _messageFormatterService: MessageFormatterService,
-              private _graphMessageProvider: GraphMessageProvider,
+  constructor(public _messageFormatterService: MessageFormatterService,
+              public _graphMessageProvider: GraphMessageProvider,
               saveGraphService: SaveDataService) {
     this._chartControl = new ChartControl(_messageFormatterService, _graphMessageProvider, saveGraphService);
     this._chartControl.startDate.subscribe((startDate) => {

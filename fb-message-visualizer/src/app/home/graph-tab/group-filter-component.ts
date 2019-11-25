@@ -8,10 +8,10 @@ import { GraphMessageProvider } from "../../core/services";
   })
 export class GroupFilterComponent {
     @Output() chartGroupSelected: EventEmitter<ChartGroupModel> = new EventEmitter();
-    private _conversionMap: Map<ChartGroupModel, string>;
-    private _models: Array<ChartGroupModel>;
+    public _conversionMap: Map<ChartGroupModel, string>;
+    public _models: Array<ChartGroupModel>;
 
-    constructor(private _graphMessageProvider: GraphMessageProvider) {
+    constructor(public _graphMessageProvider: GraphMessageProvider) {
         this._conversionMap = new Map();
         this._conversionMap.set(GraphMessageProvider.NOT_SEPARATED_NOR_STACKED, "Group members together");
         this._conversionMap.set(GraphMessageProvider.SEPARATED_BUT_NOT_STACKED, "Separate members");

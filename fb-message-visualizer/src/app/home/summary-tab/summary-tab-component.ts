@@ -9,8 +9,8 @@ import {SummaryControl} from "../control/summary-control";
     styleUrls: ['./summary-tab-component.scss']
   })
 export class SummaryTabComponent {
-  private _control: SummaryControl;
-  constructor(private _messageProvider: MessageProvider,
+  public _control: SummaryControl;
+  constructor(public _messageProvider: MessageProvider,
               private _graphMessageProvider: GraphMessageProvider) {
     this._control = new SummaryControl(_graphMessageProvider, _messageProvider);
   }

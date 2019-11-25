@@ -14,14 +14,14 @@ import { BsModalService, BsModalRef, ModalDirective } from 'ngx-bootstrap/modal'
 export class SearchComponent {
   @ViewChild(NgbTypeahead, {static: true})
   private _ngbTypeahead: NgbTypeahead;
-  private _searchControl: SearchControl;
+  public _searchControl: SearchControl;
   private _modalRef: BsModalRef;
 
   constructor(
     private _messageProvider: MessageProvider,
     private _messageLoaderService: MessageLoaderService,
-    private _graphMessageProvider: GraphMessageProvider,
-    private _messageFormatterService: MessageFormatterService,
+    public _graphMessageProvider: GraphMessageProvider,
+    public _messageFormatterService: MessageFormatterService,
     private _modalService: BsModalService) {
       this._searchControl = new SearchControl(
         this._ngbTypeahead,
@@ -30,7 +30,7 @@ export class SearchComponent {
         _graphMessageProvider);
   }
 
-  private openModal(template) {
+  public openModal(template) {
     this._modalRef = this._modalService.show(template);
   }
 

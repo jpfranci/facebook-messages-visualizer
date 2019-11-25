@@ -9,13 +9,13 @@ import { GraphMessageProvider } from "../../core/services";
   })
 export class FilterParticipantsComponent {
     @ViewChild(ModalDirective, { static: false }) modal: ModalDirective;
-    private _participantsBuffer: Array<string>;
+    public _participantsBuffer: Array<string>;
 
-    constructor(private _graphMessageProvider: GraphMessageProvider) {
+    constructor(public _graphMessageProvider: GraphMessageProvider) {
         this._selectAllParticipants();
     }
 
-    private _selectAllParticipants(): void {
+    public _selectAllParticipants(): void {
         this._graphMessageProvider.participantsObservable.subscribe((participants: Array<string>) => {
             this._participantsBuffer = participants.slice();
         })
@@ -25,15 +25,15 @@ export class FilterParticipantsComponent {
         this.modal.show();
     }
 
-    private _onSelectAll() {
+    public _onSelectAll() {
         this._selectAllParticipants();
     }
 
-    private _onUnselectAll() {
+    public _onUnselectAll() {
         this._participantsBuffer = [];
     }
 
-    private _onParticipantClick(participant: string): void {
+   public _onParticipantClick(participant: string): void {
         if (this._participantsBuffer.includes(participant)) {
             this._participantsBuffer = this._participantsBuffer.filter(oParticipant => oParticipant !== participant);
         } else {
@@ -41,7 +41,7 @@ export class FilterParticipantsComponent {
         }
     }
 
-    private _onModalHide() {
+    public _onModalHide() {
         this._graphMessageProvider.setSelectedParticipants(this._participantsBuffer);
     }
 }

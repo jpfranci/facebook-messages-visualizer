@@ -29,14 +29,14 @@ export class WordSummaryGridComponent {
     }
   };
 
-  private _columnDefs: BehaviorSubject<Array<{}>>;
-  private _modules: Array<Module>;
+  public _columnDefs: BehaviorSubject<Array<{}>>;
+  public _modules: Array<Module>;
   private _totalCol: {};
-  private _defaultColDef: {};
+  public _defaultColDef: {};
   private _destroyObservable: Subject<void>;
 
-  constructor(private _graphMessageProvider: GraphMessageProvider,
-              private _messageLoaderService: MessageLoaderService) {
+  constructor(public _graphMessageProvider: GraphMessageProvider,
+              public _messageLoaderService: MessageLoaderService) {
     this._destroyObservable = new Subject<void>();
     this._columnDefs = new BehaviorSubject<Array<{}>>([]);
     this._totalCol = {

@@ -6,6 +6,6 @@ import {Component} from "@angular/core";
   templateUrl: './conversation-picker-component.html',
 })
 export class ConversationPickerComponent {
-  constructor(private _messageProvider: MessageProvider,
-              private _graphMessageProvider: GraphMessageProvider) {}
+  constructor(public _messageProvider: MessageProvider,
+              public _graphMessageProvider: GraphMessageProvider) {}
 }
