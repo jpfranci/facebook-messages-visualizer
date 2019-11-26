@@ -16,10 +16,12 @@ export class DatabaseService {
     private _createdTablesObservable: BehaviorSubject<boolean>;
     private db;
     constructor() {
+	const remote = require('electron').remote;
+	const app = remote.app;
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: './testyaa.db',
+              filename: `${app.getPath('userData')}/db.db`,
             },
           });
 

@@ -4,7 +4,8 @@ module.exports = [
         rules: [{
           test: /node_modules[\/\\](iconv-lite)[\/\\].+/,
           resolve: {
-            aliasFields: ['main']
+            aliasFields: ['main'],
+	    core: path.join(__dirname, 'core')
           }
         }]
       }

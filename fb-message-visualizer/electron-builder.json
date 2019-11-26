@@ -1,7 +1,10 @@
 {
-  "productName": "angular-electron",
+  "productName": "FacebookVisualizer",
   "directories": {
     "output": "release/"
+  },
+  "pkg": {
+    "allowAnywhere": true
   },
   "compression": "maximum",
     "files": [
@@ -29,7 +32,7 @@
   "mac": {
     "icon": "dist",
     "target": [
-      "dmg"
+      "pkg"
     ]
   },
   "linux": {
