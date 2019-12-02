@@ -1,8 +1,9 @@
-import { Injectable } from "@angular/core";
-import { BehaviorSubject, Observable } from 'rxjs';
-import { WordModel } from '../../models/word-model';
-import { ConversationModel } from '../../models/conversation-model';
-import { ReactionModel } from "../../models";
+import {Injectable} from "@angular/core";
+import {BehaviorSubject, Observable} from 'rxjs';
+import {WordModel} from '../../models/word-model';
+import {ConversationModel} from '../../models/conversation-model';
+import {ReactionModel} from "../../models";
+
 @Injectable({
     providedIn: 'root'
 })
@@ -16,8 +17,7 @@ export class DatabaseService {
     private _createdTablesObservable: BehaviorSubject<boolean>;
     private db;
     constructor() {
-	const remote = require('electron').remote;
-	const app = remote.app;
+        const app = require('electron').remote.app;
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
