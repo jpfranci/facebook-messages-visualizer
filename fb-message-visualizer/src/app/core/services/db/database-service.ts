@@ -21,7 +21,7 @@ export class DatabaseService {
         this.db = require('knex')({
             dialect: 'sqlite3',
             connection: {
-              filename: `${app.getPath('userData')}/db.db`,
+              filename: `${app.getPath('userData')}/testdb.db`,
             },
           });
 

@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { remote } from 'electron';
 import { FacebookMessagesModel, MessageModel } from '../../models/message-model';
 import { bindNodeCallback } from 'rxjs';
+import { promisify } from "util";
 import { map, take } from 'rxjs/operators';
 import { DatabaseService } from '../db/database-service';
 import { WordModel } from '../../models/word-model';
@@ -41,56 +42,84 @@ export class MessageLoaderService {
                 private _messageProvider: MessageProvider,
                 private _spinner: NgxSpinnerService) {}
 
-    public loadFiles(errorHandler: Function): void {
+    readFile = promisify(fs.readFile);
+
+    public async loadFiles(errorHandler: Function): Promise<void> {
         let files = remote.dialog.showOpenDialog({
-            properties: ['openFile'],
+            properties: ['openFile', 'multiSelections'],
             filters: [{name: 'Messages', extensions: ['json']}]
           });
         if (files && files.length > 0) {
             this._spinner.show();
-            const callback = bindNodeCallback(fs.readFile);
             this.time = Date.now();
-            callback(files[0]).pipe(
-                map((fbJson: Buffer) => JSON.parse(fbJson.toString())),
-                take(1)
-            ).subscribe((content: FacebookMessagesModel) => {
-                try {
-                    this._processMessages(content);
-                } catch(err) {
-                    console.log(err);
-                    errorHandler(new Error("Error processing Facebook message file, make sure that the file you provided is the one downloaded from requesting your data from Facebook."));
-                } finally {
-                    this._spinner.hide();
-                }
-            })
+            const fbMessagesModel: FacebookMessagesModel[] = [];
+            for (let file of files) {
+              let rawData;
+              try {
+                rawData = await this.readFile(file, 'utf-8');
+              } catch (err) {
+                errorHandler(new Error(`There was an error opening file: ${file}`))
+              }
+              fbMessagesModel.push(JSON.parse(rawData));
+            }
+
+            if (this.isAllFromSameConversation(fbMessagesModel)) {
+              try {
+                console.log(fbMessagesModel);
+                this._processMessages(fbMessagesModel);
+              } catch(err) {
+                console.log(err);
+                errorHandler(new Error("Error processing Facebook message file, make sure that the file you provided is the one downloaded from requesting your data from Facebook."));
+              } finally {
+                this._spinner.hide();
+              }
+            } else {
+              errorHandler(new Error("Error, please make sure all uploaded files are from the same conversation."));
+              this._spinner.hide();
+            }
         }
     }
 
-    private _processMessages(messages: FacebookMessagesModel): void {
-        const participants = messages.participants.map(participant => participant.name);
+    private isAllFromSameConversation(messages: FacebookMessagesModel[]): boolean {
+      const title = messages[0].title;
+      return messages.every((message) => message.title === title);
+    }
+
+    private _processMessages(messages: FacebookMessagesModel[]): void {
+        const participants = messages[0].participants.map(participant => participant.name);
         let wordsDetail: {
             words: Array<WordModel>,
             reactions: Array<ReactionModel>,
             totalWords: number,
             dates: any
-        } = this.createDatabaseRepresentation(messages, messages.title);
+        } = this.createDatabaseRepresentation(messages, messages[0].title);
         const numToInsert: number = wordsDetail.words.length > MessageLoaderService.DEFAULT_DB_STORAGE ?
         MessageLoaderService.DEFAULT_DB_STORAGE : wordsDetail.words.length;
+
+        const startDate = messages.reduce((accum: number, message: FacebookMessagesModel) => {
+          const startOfConversationChunk = message.messages[message.messages.length - 1].timestamp_ms;
+          return accum < startOfConversationChunk ? accum : startOfConversationChunk;
+        }, messages[0].messages[messages[0].messages.length - 1].timestamp_ms);
+        const endDate = messages.reduce((accum: number, message: FacebookMessagesModel) => {
+          const endOfConversationChunk = message.messages[0].timestamp_ms;
+          return accum > endOfConversationChunk ? accum : endOfConversationChunk;
+        }, messages[0].messages[0].timestamp_ms);
+
         const conversationModel: ConversationModel = {
-            displayName: messages.title,
+            displayName: messages[0].title,
             participants: participants.join(),
             totalWords: wordsDetail.totalWords,
             nGrams: MessageLoaderService.DEFAULTNGRAMS,
             processedWords: wordsDetail.words.length,
             storedWords: numToInsert,
-            totalMessages: messages.messages.length,
+            totalMessages: messages.reduce((accum: number, message: FacebookMessagesModel) => accum + message.messages.length, 0),
             dates: JSON.stringify(wordsDetail.dates.content),
             photos: JSON.stringify(wordsDetail.dates.photos),
             stickers: JSON.stringify(wordsDetail.dates.stickers),
             videos: JSON.stringify(wordsDetail.dates.videos),
             gifs: JSON.stringify(wordsDetail.dates.gifs),
-            startDate: new Date(messages.messages[messages.messages.length - 1].timestamp_ms).toString(),
-            endDate: new Date(messages.messages[0].timestamp_ms).toString()
+            startDate: new Date(startDate).toString(),
+            endDate: new Date(endDate).toString()
         };
         const wordsToSave = wordsDetail.words.slice(0, MessageLoaderService.DEFAULT_MEMORY_SIZE);
         wordsDetail.words = [];
@@ -145,63 +174,66 @@ export class MessageLoaderService {
     }
 
     public createDatabaseRepresentation(
-        facebookMessageModel: FacebookMessagesModel,
+        facebookMessageModels: FacebookMessagesModel[],
         oDisplayName: string): {
             words: Array<WordModel>,
             reactions: Array<ReactionModel>
             totalWords: number ,
             dates: any
         } {
-            let totalWords: number = 0;
-            let wordObject: {} = {};
-            let dates: any = {
-                content: {},
-                photos: {},
-                stickers: {},
-                gifs: {},
-                videos: {}
-            };
-            let reactionObject: {} = {};
+          let totalWords: number = 0;
+          let wordObject: {} = {};
+          let dates: any = {
+            content: {},
+            photos: {},
+            stickers: {},
+            gifs: {},
+            videos: {}
+          };
+          let reactionObject: {} = {};
+          for (let facebookMessageModel of facebookMessageModels) {
             // for loops are much more performant than forEach
             for (let i = 0, len = facebookMessageModel.messages.length; i < len; i++) {
-                const messageModel: MessageModel = facebookMessageModel.messages[i];
-                const dateString: string = new Date(messageModel.timestamp_ms).toDateString();
-                const sender: string = messageModel.sender_name;
-                if (messageModel.hasOwnProperty('content')) {
-                    this._addToDates(dates.content, dateString, sender);
-                    const formattedContent: string = this._cleanString(messageModel.content);
-                    const tokens: Array<string> = formattedContent.split(' ');
-                    totalWords += tokens.length;
-                    this._processNGrams(tokens, wordObject, sender, dateString);
-                }
-                if (messageModel.hasOwnProperty('sticker')) {
-                    this._addToDates(dates.stickers, dateString, sender);
-                }
-                if (messageModel.hasOwnProperty('gifs')) {
-                    this._addToDates(dates.gifs, dateString, sender);
-                }
-                if (messageModel.hasOwnProperty('reactions')) {
-                    this._processReactions(reactionObject, messageModel.reactions, dateString);
-                }
-                if (messageModel.hasOwnProperty('photos')) {
-                    this._addToDates(dates.photos, dateString, sender);
-                }
+              const messageModel: MessageModel = facebookMessageModel.messages[i];
+              const dateString: string = new Date(messageModel.timestamp_ms).toDateString();
+              const sender: string = messageModel.sender_name;
+              if (messageModel.hasOwnProperty('content')) {
+                this._addToDates(dates.content, dateString, sender);
+                const formattedContent: string = this._cleanString(messageModel.content);
+                const tokens: Array<string> = formattedContent.split(' ');
+                totalWords += tokens.length;
+                this._processNGrams(tokens, wordObject, sender, dateString);
+              }
+              if (messageModel.hasOwnProperty('sticker')) {
+                this._addToDates(dates.stickers, dateString, sender);
+              }
+              if (messageModel.hasOwnProperty('gifs')) {
+                this._addToDates(dates.gifs, dateString, sender);
+              }
+              if (messageModel.hasOwnProperty('reactions')) {
+                this._processReactions(reactionObject, messageModel.reactions, dateString);
+              }
+              if (messageModel.hasOwnProperty('photos')) {
+                this._addToDates(dates.photos, dateString, sender);
+              }
 
-                if (messageModel.hasOwnProperty('videos')) {
-                    this._addToDates(dates.videos, dateString, sender);
-                }
+              if (messageModel.hasOwnProperty('videos')) {
+                this._addToDates(dates.videos, dateString, sender);
+              }
             }
-            const wordArray = this._getModelArray<WordModel>(wordObject, oDisplayName, "word");
-            const reactionArray = this._getModelArray<ReactionModel>(reactionObject, oDisplayName, "reaction");
-            console.log(Date.now() - this.time);
-            wordObject = {};
-            reactionObject = {};
-            return {
-                words: wordArray,
-                reactions: reactionArray,
-                totalWords: totalWords,
-                dates: dates
-            };
+          }
+
+          const wordArray = this._getModelArray<WordModel>(wordObject, oDisplayName, "word");
+          const reactionArray = this._getModelArray<ReactionModel>(reactionObject, oDisplayName, "reaction");
+          console.log(Date.now() - this.time);
+          wordObject = {};
+          reactionObject = {};
+          return {
+              words: wordArray,
+              reactions: reactionArray,
+              totalWords: totalWords,
+              dates: dates
+          };
     }
 
     private _getModelArray<T>(accumObject: {}, displayName: string, keyDisplayName: string): Array<T> {
