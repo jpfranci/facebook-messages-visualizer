@@ -1,6 +1,8 @@
 {
   "name": "fb-message-visualizer",
+  "author": "John Paul Francisco",
   "version": "0.1.0",
+  "description": "A tool to visualize your facebook messages",
   "homepage": "https://github.com/jpfranci/fb-messages-visualizer",
   "main": "main.js",
   "private": true,
@@ -52,7 +54,6 @@
     "core-js": "3.1.4",
     "electron": "^5.0.6",
     "electron-builder": "^20.31.3",
-    "electron-rebuild": "^1.8.6",
     "electron-reload": "1.5.0",
     "jasmine-core": "3.4.0",
     "jasmine-spec-reporter": "4.2.1",
