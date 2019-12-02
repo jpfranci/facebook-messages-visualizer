@@ -11,6 +11,34 @@
       </tab>
       <tab heading = 'Load Data' class = "loadTab" (selectTab)="_activeTab = 'load'">
         <div class = "container">
+          <div
+            class="modal fade"
+            bsModal
+            #modal="bs-modal"
+            role="dialog"
+            aria-labelledby="dialog-events-name">
+            <div class="modal-dialog modal-sm" style = "display: flex; justify-content: center; align-items: center;">
+              <div class="modal-content" style = "width: fit-content;">
+                <div class="modal-header">
+                  <h4 id="dialog-events-name" class="modal-title pull-left">Confirmation</h4>
+                  <button type="button" class="close pull-right" aria-label="Close" (click)="modal.hide()">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <div class = "disclaimer">
+                    Please make sure that you have selected all files for the conversation selected before proceeding.<br>
+                    This means selecting all message.json files (message_1.json, message_2.json, ...) to completely process the conversation.<br>
+                    Not doing so might result in your conversation not being processed properly.<br>
+                    <div class = "disclaimer-buttons">
+                      <button class ="btn btn-primary disclaimer-button" (click) = "this.loadData()">Continue</button>
+                      <button class ="btn btn-primary disclaimer-button" (click) = "modal.hide()">Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <ngb-accordion style = "justify-self: start" #acc="ngbAccordion">
             <ngb-panel title="How to use with your Facebook data">
               <ng-template ngbPanelContent>
@@ -20,7 +48,8 @@
                 <img style = "width: 100%" src="../../assets/settings-for-download.png"><br><br>
                 Please note that your data may take a day or so for Facebook to process and is only available for a limited time. <br><br>
                 After you get an email notification from Facebook, download the .zip file from the Available Copies tab and load any conversation in: <br>
-                messages -> inbox -> (FOLDER OF CONVERSATION YOU WANT TO ANALYZE) -> message_1.json
+                messages -> inbox -> (FOLDER OF CONVERSATION YOU WANT TO ANALYZE) -> all message files (message_1.json, message_2.json, ...)<br><br>
+                <b>Please make sure to load all your message files</b>
               </ng-template>
             </ngb-panel>
           </ngb-accordion>

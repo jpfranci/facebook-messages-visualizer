@@ -3,15 +3,14 @@ import { Injectable } from '@angular/core';
 import * as fs from 'fs';
 import { remote } from 'electron';
 import { FacebookMessagesModel, MessageModel } from '../../models/message-model';
-import { bindNodeCallback } from 'rxjs';
 import { promisify } from "util";
-import { map, take } from 'rxjs/operators';
 import { DatabaseService } from '../db/database-service';
 import { WordModel } from '../../models/word-model';
 import { NgxSpinnerService } from "ngx-spinner";
 import { ConversationModel } from '../../models/conversation-model';
 import { MessageProvider } from './message-provider';
 import { ReactionModel } from '../../models';
+import {BehaviorSubject, Observable, Subject} from "rxjs";
 var iconv = require('iconv-lite');
 
 @Injectable({
@@ -37,47 +36,60 @@ export class MessageLoaderService {
     public time: number;
     public static DEFAULT_DB_STORAGE: number = 6000;
     public static DEFAULT_MEMORY_SIZE: number = 50000;
+    private filesPicked: string[];
+    public filePickedObservable: Subject<boolean> ;
 
     constructor(private _databaseService: DatabaseService,
                 private _messageProvider: MessageProvider,
-                private _spinner: NgxSpinnerService) {}
+                private _spinner: NgxSpinnerService) {
+      this.filePickedObservable = new Subject<boolean>();
+    }
 
     readFile = promisify(fs.readFile);
 
-    public async loadFiles(errorHandler: Function): Promise<void> {
+    public pickFiles(errorHandler: Function): void {
         let files = remote.dialog.showOpenDialog({
             properties: ['openFile', 'multiSelections'],
             filters: [{name: 'Messages', extensions: ['json']}]
           });
         if (files && files.length > 0) {
-            this._spinner.show();
-            this.time = Date.now();
-            const fbMessagesModel: FacebookMessagesModel[] = [];
-            for (let file of files) {
-              let rawData;
-              try {
-                rawData = await this.readFile(file, 'utf-8');
-              } catch (err) {
-                errorHandler(new Error(`There was an error opening file: ${file}`))
-              }
-              fbMessagesModel.push(JSON.parse(rawData));
-            }
-
-            if (this.isAllFromSameConversation(fbMessagesModel)) {
-              try {
-                console.log(fbMessagesModel);
-                this._processMessages(fbMessagesModel);
-              } catch(err) {
-                console.log(err);
-                errorHandler(new Error("Error processing Facebook message file, make sure that the file you provided is the one downloaded from requesting your data from Facebook."));
-              } finally {
-                this._spinner.hide();
-              }
-            } else {
-              errorHandler(new Error("Error, please make sure all uploaded files are from the same conversation."));
-              this._spinner.hide();
-            }
+          this.filesPicked = files;
+          this.filePickedObservable.next(true);
         }
+    }
+
+    public async loadFiles(errorHandler: Function): Promise<void> {
+      if (this.filesPicked && this.filesPicked.length > 0) {
+        this.filePickedObservable.next(false);
+        const files = this.filesPicked;
+        this._spinner.show();
+        this.time = Date.now();
+        const fbMessagesModel: FacebookMessagesModel[] = [];
+        for (let file of files) {
+          let rawData;
+          try {
+            rawData = await this.readFile(file, 'utf-8');
+          } catch (err) {
+            errorHandler(new Error(`There was an error opening file: ${file}`))
+          }
+          fbMessagesModel.push(JSON.parse(rawData));
+        }
+
+        if (this.isAllFromSameConversation(fbMessagesModel)) {
+          try {
+            console.log(fbMessagesModel);
+            this._processMessages(fbMessagesModel);
+          } catch(err) {
+            console.log(err);
+            errorHandler(new Error("Error processing Facebook message file, make sure that the file you provided is the one downloaded from requesting your data from Facebook."));
+          } finally {
+            this._spinner.hide();
+          }
+        } else {
+          errorHandler(new Error("Error, please make sure all uploaded files are from the same conversation."));
+          this._spinner.hide();
+        }
+      }
     }
 
     private isAllFromSameConversation(messages: FacebookMessagesModel[]): boolean {

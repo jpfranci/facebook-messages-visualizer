@@ -4,6 +4,21 @@
   display: flex;
   flex-direction: column;
 
+  .disclaimer{
+    width: 50vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .disclaimer-buttons {
+      margin-top: 10px;
+
+      .disclaimer-button{
+        margin: 10px;
+      }
+    }
+  }
+
   .loadDataButton {
     margin-top: auto;
   }
@@ -35,9 +50,14 @@
 }
 
 .title {
-  color: black;
+  background: linear-gradient(#5680FF, #59A0FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 3em;
+  outline: black 10px;
   margin: 0;
   align-self: center;
   justify-self: start;
   padding: 20px 10px;
+  font-weight: 600;
 }
