@@ -1,6 +1,5 @@
-# Chat Trace
-Electron app to visualize your facebook conversation data from reactions to individual words and phrases. Supports analyzing Facebook conversations
-up to millions of messages in length in any wanted time range. Extremely customizable and supports easy sharing through exporting charts to PNG or
-frequency grids to CSV. 
+# Chat Trace 
+Electron app to visualize your Facebook conversation data from reactions to individual words and phrases using downloaded json data from Facebook. Supports analyzing Facebook conversations up to millions of messages in length in any wanted time range. Extremely customizable and supports easy sharing by exporting charts to PNG or frequency grids to CSV. 
 
-![random word](https://user-images.githubusercontent.com/42393264/70118448-db28c900-161c-11ea-8d7c-89659be95af7.png)
+![heart](https://user-images.githubusercontent.com/42393264/70118749-a0736080-161d-11ea-8cb7-66eb70666f71.png)
+
