@@ -1,5 +1,8 @@
 # Chat Trace 
-Electron app to visualize your Facebook conversation data from reactions to individual words and phrases using json data downloaded from Facebook. Supports analyzing Facebook conversations up to millions of messages in length in any wanted time range. Extremely customizable and supports easy sharing with built-in support for exporting charts to PNG or frequency grids to CSV. 
+Electron app to visualize your Facebook conversation data using json data downloaded from Facebook. 
+* Analyzes Facebook conversations to find your most used words/phrases in a conversation in any wanted time range
+* Extremely customizable and supports easy sharing with built-in support for exporting charts to PNG or frequency grids to CSV 
+* Offers quick summaries of each conversations stats (message count, photo count, etc) and graphs those distributions over time
 
 <p align = "center">
   <img width="700" alt="sample chart" src="https://drive.google.com/uc?export=view&id=1Kq4JasaUUUNLvEuIJXEHOzrQz1zZ5I15">
