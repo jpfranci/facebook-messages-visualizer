@@ -16,6 +16,6 @@ Electron app to visualize your Facebook conversation data using json data downlo
 ### To Install
 Make sure that you have python2.7 installed and in your path
 
-cd fb-message-visualizer
-npm run install
-npm run start
+* cd fb-message-visualizer
+* npm run install
+* npm run start
