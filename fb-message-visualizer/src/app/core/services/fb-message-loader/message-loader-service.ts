@@ -77,7 +77,6 @@ export class MessageLoaderService {
 
         if (this.isAllFromSameConversation(fbMessagesModel)) {
           try {
-            console.log(fbMessagesModel);
             this._processMessages(fbMessagesModel, shouldDeleteExisting);
           } catch(err) {
             console.log(err);
