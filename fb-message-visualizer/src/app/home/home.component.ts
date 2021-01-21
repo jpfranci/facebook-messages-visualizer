@@ -9,6 +9,7 @@ import {ModalDirective} from "ngx-bootstrap";
 })
 export class HomeComponent {
   private _alerts: Array<any>;
+  private _shouldDeleteExistingData: boolean = false;
   @ViewChild(ModalDirective, { static: false }) modal: ModalDirective;
   private _activeTab: string;
   constructor(public _messageLoaderService: MessageLoaderService,
@@ -32,7 +33,11 @@ export class HomeComponent {
         dismissible: true,
         timeout: 10000
       });
-    });
+    }, this._shouldDeleteExistingData);
+  }
+
+  public onCheckExistingDataToggle(newValue: boolean): void {
+    this._shouldDeleteExistingData = newValue;
   }
 
   public loadFiles() {

@@ -58,7 +58,7 @@ export class MessageLoaderService {
         }
     }
 
-    public async loadFiles(errorHandler: Function): Promise<void> {
+    public async loadFiles(errorHandler: Function, shouldDeleteExisting: boolean): Promise<void> {
       if (this.filesPicked && this.filesPicked.length > 0) {
         this.filePickedObservable.next(false);
         const files = this.filesPicked;
@@ -78,7 +78,7 @@ export class MessageLoaderService {
         if (this.isAllFromSameConversation(fbMessagesModel)) {
           try {
             console.log(fbMessagesModel);
-            this._processMessages(fbMessagesModel);
+            this._processMessages(fbMessagesModel, shouldDeleteExisting);
           } catch(err) {
             console.log(err);
             errorHandler(new Error("Error processing Facebook message file, make sure that the file you provided is the one downloaded from requesting your data from Facebook."));
@@ -97,7 +97,7 @@ export class MessageLoaderService {
       return messages.every((message) => message.title === title);
     }
 
-    private _processMessages(messages: FacebookMessagesModel[]): void {
+    private _processMessages(messages: FacebookMessagesModel[], shouldDeleteExisting: boolean): void {
         const participants = messages[0].participants.map(participant => participant.name);
         let wordsDetail: {
             words: Array<WordModel>,
@@ -106,7 +106,7 @@ export class MessageLoaderService {
             dates: any
         } = this.createDatabaseRepresentation(messages, messages[0].title);
         const numToInsert: number = wordsDetail.words.length > MessageLoaderService.DEFAULT_DB_STORAGE ?
-        MessageLoaderService.DEFAULT_DB_STORAGE : wordsDetail.words.length;
+          MessageLoaderService.DEFAULT_DB_STORAGE : wordsDetail.words.length;
 
         const startDate = messages.reduce((accum: number, message: FacebookMessagesModel) => {
           const startOfConversationChunk = message.messages[message.messages.length - 1].timestamp_ms;
@@ -136,8 +136,7 @@ export class MessageLoaderService {
         const wordsToSave = wordsDetail.words.slice(0, MessageLoaderService.DEFAULT_MEMORY_SIZE);
         wordsDetail.words = [];
         this._messageProvider.setMemoryModel(wordsToSave, conversationModel);
-        this._insertReactions(wordsDetail.reactions);
-        this._insertWords(wordsToSave, numToInsert, conversationModel);
+        this._configureTables(shouldDeleteExisting, numToInsert, conversationModel, wordsDetail.reactions, wordsToSave);
     }
 
     public getTotalFrequency(frequencies: {}): number {
@@ -163,6 +162,21 @@ export class MessageLoaderService {
       }, 0);
     }
 
+  private async _configureTables(shouldDeleteExisting: boolean,
+                                 numWordsToSave: number,
+                                 conversationModel: ConversationModel,
+                                 reactions: Array<ReactionModel>,
+                                 wordsToSave: Array<WordModel>) {
+    console.log(shouldDeleteExisting);
+    if (shouldDeleteExisting) {
+      await this._databaseService.deleteConversationWithDisplayName(conversationModel.displayName);
+    }
+    await this._databaseService.insertIntoTable(DatabaseService.CONVERSATION_TABLE, conversationModel)
+      .catch(err => console.log(err));
+    this._insertReactions(reactions);
+    this._insertWords(wordsToSave, numWordsToSave)
+  }
+
     private async _insertReactions(reactions: Array<ReactionModel>): Promise<void> {
         await this._databaseService.insertIntoTable(DatabaseService.REACTIONS_TABLE, reactions);
         this._messageProvider.addToReactions(reactions);
@@ -170,8 +184,7 @@ export class MessageLoaderService {
 
     private async _insertWords(
         words: Array<WordModel>,
-        numToInsert: number,
-        conversationModel: ConversationModel): Promise<void> {
+        numToInsert: number): Promise<void> {
             const iterations = Math.floor(numToInsert / 100);
             let currentEnd: number = 0;
             for (let i = 0; i < iterations; i++) {
@@ -180,8 +193,6 @@ export class MessageLoaderService {
                 currentEnd += 100;
             }
             await this._databaseService.insertIntoTable(DatabaseService.WORDS_TABLE, words.slice(currentEnd, numToInsert))
-                .catch(err => console.log(err));
-            await this._databaseService.insertIntoTable(DatabaseService.CONVERSATION_TABLE, conversationModel)
                 .catch(err => console.log(err));
     }
 

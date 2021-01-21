@@ -5,7 +5,7 @@ import {ModalDirective} from "ngx-bootstrap";
 @Component({
     selector: 'chart-filters',
     templateUrl: './chart-filters.html',
-    styleUrls: ['./chart-filters.scss']
+    styleUrls: ['./chart-filters.scss',  '../../shared/modal.scss']
   })
 export class ChartFilters {
   @Input() control: ChartControl;

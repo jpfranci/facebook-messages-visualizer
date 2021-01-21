@@ -17,7 +17,7 @@
             #modal="bs-modal"
             role="dialog"
             aria-labelledby="dialog-events-name">
-            <div class="modal-dialog modal-sm" style = "display: flex; justify-content: center; align-items: center;">
+            <div class="modal-dialog modal-sm disclaimer-modal" style = "display: flex; justify-content: center; align-items: center;">
               <div class="modal-content" style = "width: fit-content;">
                 <div class="modal-header">
                   <h4 id="dialog-events-name" class="modal-title pull-left">Confirmation</h4>
@@ -30,6 +30,13 @@
                     Please make sure that you have selected all files for the conversation selected before proceeding.<br>
                     This means selecting all message.json files (message_1.json, message_2.json, ...) to completely process the conversation.<br>
                     Not doing so might result in your conversation not being processed properly.<br>
+                    <div class = "delete-existing-data">
+                      <input
+                        type = "checkbox"
+                        (change)="onCheckExistingDataToggle($event.returnValue)"
+                      >
+                      <span style = "margin-left: 10px">Delete all existing data for the imported conversation</span>
+                    </div>
                     <div class = "disclaimer-buttons">
                       <button class ="btn btn-primary disclaimer-button" (click) = "this.loadData()">Continue</button>
                       <button class ="btn btn-primary disclaimer-button" (click) = "modal.hide()">Cancel</button>
@@ -39,21 +46,21 @@
               </div>
             </div>
           </div>
-          <ngb-accordion style = "justify-self: start" #acc="ngbAccordion">
+          <ngb-accordion style = "justify-self: start" #acc="ngbAccordion" activeIds="ngb-panel-0">
             <ngb-panel title="How to use with your Facebook data">
               <ng-template ngbPanelContent>
                 Starting from Facebook go to: <br>
                 Facebook settings -> Your Facebook Information -> Download Your Information<br>
                 Make sure to request your data in a JSON format as shown below: <br><br>
-                <img style = "width: 100%" src="https://drive.google.com/uc?export=view&id=1UQuznAUJc5DQGMglg7vSJ-DqQQnl8PRY"><br><br>
+                <img style = "width: 80%" src="https://drive.google.com/uc?export=view&id=1UQuznAUJc5DQGMglg7vSJ-DqQQnl8PRY"><br><br>
                 Please note that your data may take a day or so for Facebook to process and is only available for a limited time. <br><br>
                 After you get an email notification from Facebook, download the .zip file from the Available Copies tab and load any conversation in: <br>
-                messages -> inbox -> (FOLDER OF CONVERSATION YOU WANT TO ANALYZE) -> all message files (message_1.json, message_2.json, ...)<br><br>
+                messages -> inbox -> [folder of conversation] -> all message files (message_1.json, message_2.json, ...)<br><br>
                 <b>Please make sure to load all your message files</b>
               </ng-template>
             </ngb-panel>
           </ngb-accordion>
-          <button style = "margin-top: auto" type = "button" (click) = "loadFiles()" class = "btn btn-primary">Load Data</button>
+          <button style = "margin-top: auto; align-self: center; width: 40vw;" type = "button" (click) = "loadFiles()" class = "btn btn-primary">Load Data</button>
         </div>
     </tab>
     <tab *ngIf = "this._messageProvider.hasDataSubject | async" heading = "View Your Top Words/Phrases" (selectTab)="_activeTab = 'topWords'">

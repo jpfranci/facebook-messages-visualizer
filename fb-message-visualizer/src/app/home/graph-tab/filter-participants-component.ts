@@ -5,7 +5,7 @@ import { GraphMessageProvider } from "../../core/services";
 @Component({
     selector: 'filter-participants',
     templateUrl: './filter-participants-component.html',
-    styleUrls: ['filter-participants-component.scss']
+    styleUrls: ['filter-participants-component.scss', '../../shared/modal.scss']
   })
 export class FilterParticipantsComponent {
     @ViewChild(ModalDirective, { static: false }) modal: ModalDirective;
