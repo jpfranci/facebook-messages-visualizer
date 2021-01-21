@@ -9,9 +9,6 @@ Electron app to visualize your Facebook conversation data using json data downlo
   <img width="750" alt="sample grid" src="https://drive.google.com/uc?export=view&id=1SoTlQKO9Wi8oxvQzHTnM2u_J1-s6PdSP">
 </p>
 
-<p align = "center">
-  <a href = https://drive.google.com/drive/u/2/folders/1ypjr27aGRpU-tw6inGdcn9uNb-1RAvN7>Download here</a>
-</p>
 
 ### To Install
 Make sure that you have python2.7 installed and in your path
@@ -19,3 +16,10 @@ Make sure that you have python2.7 installed and in your path
 * cd fb-message-visualizer
 * npm run install
 * npm run start
+
+### Pre-built binary links
+You can also download the pre-built electron files.
+<p>
+  <a href = https://drive.google.com/drive/u/2/folders/1ypjr27aGRpU-tw6inGdcn9uNb-1RAvN7>Download here</a>
+</p>
+ 
