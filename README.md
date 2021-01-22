@@ -20,5 +20,5 @@ You can download the pre-built electron files.
 Make sure that you have python2.7 installed and in your path
 
 * cd fb-message-visualizer
-* npm run install
+* npm install
 * npm run start
