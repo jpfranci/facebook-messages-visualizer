@@ -5,8 +5,8 @@ Electron app to visualize your Facebook conversation data using json data downlo
 * Offers quick summaries of each conversations stats (message count, photo count, etc) and graphs those distributions over time
 
 <p align = "center">
-  <img width="700" alt="sample chart" src="https://drive.google.com/uc?export=view&id=1Kq4JasaUUUNLvEuIJXEHOzrQz1zZ5I15">
-  <img width="750" alt="sample grid" src="https://drive.google.com/uc?export=view&id=1SoTlQKO9Wi8oxvQzHTnM2u_J1-s6PdSP">
+  <img width="700" alt="sample chart" src="https://github.com/jpfranci/facebook-messages-visualizer/blob/master/fb-message-visualizer/example_images/Chart.png?raw=true)">
+  <img width="750" alt="sample grid" src="https://github.com/jpfranci/facebook-messages-visualizer/blob/master/fb-message-visualizer/example_images/Grid.png?raw=true">
 </p>
 
 
