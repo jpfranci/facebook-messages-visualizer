@@ -17,7 +17,7 @@ You can download the pre-built electron files.
 </p>
  
  ### To Manually Run
-Make sure that you have python2.7 installed and in your path
+Make sure that you have python2.7 installed and in your path (this is necessary because node-pre-gyp has to run to install sqlite and link it)
 
 * clone this repo
 * cd fb-message-visualizer
