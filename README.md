@@ -6,7 +6,7 @@ Electron app to visualize your Facebook conversation data using json data downlo
 
 <p align = "center">
   <img width="700" alt="sample chart" src="https://github.com/jpfranci/facebook-messages-visualizer/blob/master/fb-message-visualizer/example_images/Chart.png?raw=true)">
-  <img width="750" alt="sample grid" src="https://github.com/jpfranci/facebook-messages-visualizer/blob/master/fb-message-visualizer/example_images/Grid.png?raw=true">
+  <img width="750" alt="sample grid" src="https://github.com/jpfranci/facebook-messages-visualizer/blob/master/fb-message-visualizer/example_images/Grid.PNG?raw=true">
 </p>
 
 
