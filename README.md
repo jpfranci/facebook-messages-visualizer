@@ -16,9 +16,10 @@ You can download the pre-built electron files.
   <a href = https://drive.google.com/drive/u/2/folders/1ypjr27aGRpU-tw6inGdcn9uNb-1RAvN7>Download here</a>
 </p>
  
- ### To Install
+ ### To Manually Run
 Make sure that you have python2.7 installed and in your path
 
+* clone this repo
 * cd fb-message-visualizer
 * npm install
 * npm run start
